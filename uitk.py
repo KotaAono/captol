@@ -24,6 +24,27 @@ def high_resolution() -> None:
     windll.shcore.SetProcessDpiAwareness(True)    
 
 
+def noext_basename(path: str) -> str:
+    return splitext(basename(path))
+
+
+def get_unique_str(orgstr: str, strlist: list[str]) -> str:
+    i = 0
+    unistr = orgstr
+    while unistr in strlist:
+        i += 1
+        unistr = f"{orgstr} ({i})"
+    return unistr
+
+
+def shorten(path: str, maxlen: int) -> str:
+    path = path.replace('/', '\\')
+    dirlist = path.split('\\')
+    if len(dirlist) > maxlen:
+        return '\\'.join(['...', dirlist[-2], dirlist[-1]])
+    return path
+
+
 class Application(ttk.Frame):
 
     def __init__(self, root: tk.Tk) -> None:
@@ -215,7 +236,7 @@ class ExtractFrame(ttk.Frame):
             self.clipframe.register_cliparea(newname, newrect)
             
     def _reset_folder_info(self, folder: str) -> None:
-        self._set_formatted_path(folder)
+        self.var_folder.set(shorten(folder, maxlen=4))
         self.counter.change_dir(folder)
         self.counter.initialize_count()
     
@@ -235,14 +256,6 @@ class ExtractFrame(ttk.Frame):
             return self.lb_areas.get(idx)
         return None
 
-    def _set_formatted_path(self, path: str):
-        dirlist = path.split('/')
-        if len(dirlist) > 4:
-            fpath = '\\'.join(
-                ['...', dirlist[-2], dirlist[-1]])
-        else:
-            fpath = path.replace('/', '\\')
-        self.var_folder.set(fpath)
 
 class ClipFrame(ttk.Frame):
 
@@ -466,7 +479,7 @@ class EditorDialog(ttk.Frame):
             x, y, w, h = asdict(self.areadb.get(name)).values()
         else:
             x, y, w, h = 100, 200, 400, 300
-            name = self._unique_name("New")
+            name = get_unique_str("New", self.areadb.namelist)
 
         self.x.set(x)
         self.y.set(y)
@@ -525,14 +538,6 @@ class EditorDialog(ttk.Frame):
                 widget['state'] = NORMAL
             except tk.TclError:
                 pass
-
-    def _unique_name(self, basename: str) -> str:
-        i = 0
-        name = basename
-        while self.areadb.has_name(name):
-            i += 1
-            name = f"{basename} ({i})"
-        return name
 
     def _validate(self, name: str, x: int, y: int, w: int, h: int) -> bool:
         if name == "":
@@ -673,22 +678,26 @@ class StoreFrame(ttk.Frame):
 
     def __init__(self, root: tk.Tk, parent: Any, env: Environment) -> None:
         super().__init__(root)
-        self.var_images_total = tk.IntVar(value=0)
+        self.var_images_total = tk.IntVar()
         self.var_imagename_from = tk.StringVar()
         self.var_imagename_to = tk.StringVar()
         self.image_paths = None
         self.var_pdf_path = tk.StringVar()
         self.var_pwd1 = tk.StringVar()
+        self.var_pwd2 = tk.StringVar()
         self.converter = PdfConverter(env)
+        self.passlock = PassLock(env)
 
         self.create_widgets()
+        self.init_vars_conversion()
+        self.init_vars_protection()
 
     def create_widgets(self) -> None:
         ttk.LabelFrame(self, text="PDF conversion").place(
             x=10, y=10, width=435, height=130)
         ttk.Button(
-            self, text="📁", style='secondary.Outline.TButton',command=self.on_imagefolder_clicked).place(
-            x=30, y=50, width=45)
+            self, text="📁", style='secondary.Outline.TButton',
+            command=self.on_imagefolder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             self, textvariable=self.var_imagename_from,
             state='readonly').place(x=80, y=52, width=160)
@@ -699,13 +708,15 @@ class StoreFrame(ttk.Frame):
         ttk.Label(self, text="Total images:").place(x=30, y=100)
         ttk.Label(self, textvariable=self.var_images_total, anchor=CENTER).place(
             x=200, y=100, width=200)
-        ttk.Button(self, text="Convert", command=self.on_convert_clicked).place(x=150, y=150, width=160)
-
+        ttk.Button(
+            self, text="Convert", command=self.on_convert_clicked).place(x=150, y=150, width=160)
         ttk.LabelFrame(self, text="Password protection").place(
             x=10, y=220, width=435, height=200)
-        ttk.Button(self, text="📁", style='secondary.Outline.TButton').place(
-            x=30, y=260, width=45)
-        ttk.Entry(self, state='readonly').place(x=80, y=262, width=345)
+        ttk.Button(
+            self, text="📁", style='secondary.Outline.TButton',
+            command=self.on_pdffolder_clicked).place(x=30, y=260, width=45)
+        ttk.Entry(
+            self, textvariable=self.var_pdf_path, state='readonly').place(x=80, y=262, width=345)
         ttk.Label(self, text="Password:").place(x=30, y=320)
         ent_pwd1 = self.ent_pwd1 = ttk.Entry(self)
         ent_pwd1.place(x=145, y=317, width=280)
@@ -715,11 +726,27 @@ class StoreFrame(ttk.Frame):
         ttk.Button(self, text="Lock").place(x=150, y=430, width=160)
         self.pack()
     
+    def init_vars_conversion(self) -> None:
+        self.var_imagename_from.set("")
+        self.var_imagename_to.set("")
+        self.var_images_total.set(0)
+        self.image_paths = None
+
+    def init_vars_protection(self) -> None:
+        self.var_pdf_path.set("")
+        self.var_pwd1.set("")
+        self.var_pwd2.set("")
+        self.ent_pwd1['show'] = "●"
+        self.ent_pwd2['state'] = DISABLED
+    
     def on_imagefolder_clicked(self) -> None:
         images = filedialog.askopenfilenames(title="Select Images", filetypes=[('png', '*.png')])
-        print(images)
         if images:
-            self._set_formatted_imagenames(images)
+            self.var_imagename_from.set(noext_basename(images[0]))
+            if len(images) > 1:
+                self.var_imagename_to.set(noext_basename(images[-1]))
+        else:
+            self.var_imagename_to.set("")
             self.var_images_total.set(len(images))
             self.image_paths = images
     
@@ -738,20 +765,16 @@ class StoreFrame(ttk.Frame):
                 "\nAre you sure to overwrite it?"):
                 return
         self.converter.save_as_pdf(self.image_paths, savepath)
-        self.var_imagename_from.set("")
-        self.var_imagename_to.set("")
-        self.var_images_total.set(0)
-        self.image_paths = None
-    
-    def on_pdffolder_clicked(self):
-        pass
+        self.init_vars_conversion()
 
-    def _set_formatted_imagenames(self, images: tuple[str]) -> None:
-        self.var_imagename_from.set(splitext(basename(images[0]))[0])
-        if len(images) > 1:
-            self.var_imagename_to.set(splitext(basename(images[-1]))[0])
-        else:
-            self.var_imagename_to.set("")
+    def on_pdffolder_clicked(self):
+        pdf = filedialog.askopenfilename(title="Select PDF", filetypes=[('pdf', '*.pdf')])
+        if not pdf:
+            return
+        
+        self.var_pdf_path.set(shorten(pdf, maxlen=2))
+        # if self.passlock.is_encrypted(pdf):
+        #     self.
 
 
 class SettingsFrame(ttk.Frame):
