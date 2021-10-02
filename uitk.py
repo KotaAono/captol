@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ctypes import windll
 from dataclasses import asdict
-from os.path import basename, splitext
+from os.path import basename, splitext, isfile
 from threading import Thread
 from time import sleep
 import tkinter as tk
@@ -77,12 +77,12 @@ class ExtractFrame(ttk.Frame):
         self.env = env
         self.prevname = None
         self.var_folder = tk.StringVar()
-        images_total = self.images_total = tk.IntVar()
+        var_images_total = self.var_images_total = tk.IntVar()
         images_today = self.images_today = tk.IntVar()
         self.var_listitems = tk.StringVar()
         self.var_clipmode = tk.IntVar(value=2)
         areadb = self.areadb = AreaDB(env)
-        self.counter = ImageCounter('png', images_total, images_today)
+        self.counter = ImageCounter('png', var_images_total, images_today)
         self.clipper = Clipper()
         self.transparent = TransparentFrame(parent=root)
 
@@ -101,7 +101,7 @@ class ExtractFrame(ttk.Frame):
         ttk.Entry(frame1, textvariable=self.var_folder, state='readonly').place(
             x=80, y=52, width=345)
         ttk.Label(frame1, text="Past images:").place(x=30, y=100)
-        ttk.Label(frame1, textvariable=self.images_total, anchor=CENTER).place(
+        ttk.Label(frame1, textvariable=self.var_images_total, anchor=CENTER).place(
             x=200, y=100, width=200)
         ttk.Label(frame1, text="Today's images:").place(x=30, y=140)
         ttk.Label(frame1, textvariable=self.images_today, anchor=CENTER).place(
@@ -673,30 +673,35 @@ class StoreFrame(ttk.Frame):
 
     def __init__(self, root: tk.Tk, parent: Any, env: Environment) -> None:
         super().__init__(root)
-        self.images_total = tk.IntVar(value=0)
-        self.imagename_from = tk.StringVar()
-        self.imagename_to = tk.StringVar()
-        self.image_paths = list()
-        self.pdf_path = tk.StringVar()
-        self.pwd1 = tk.StringVar()
+        self.var_images_total = tk.IntVar(value=0)
+        self.var_imagename_from = tk.StringVar()
+        self.var_imagename_to = tk.StringVar()
+        self.image_paths = None
+        self.var_pdf_path = tk.StringVar()
+        self.var_pwd1 = tk.StringVar()
+        self.converter = PdfConverter(env)
 
         self.create_widgets()
 
     def create_widgets(self) -> None:
-        ttk.LabelFrame(self, text="Images for PDF conversion").place(
+        ttk.LabelFrame(self, text="PDF conversion").place(
             x=10, y=10, width=435, height=130)
         ttk.Button(
             self, text="📁", style='secondary.Outline.TButton',command=self.on_imagefolder_clicked).place(
             x=30, y=50, width=45)
-        ttk.Entry(self, state='readonly').place(x=80, y=52, width=150)
-        ttk.Label(self, text="–").place(x=240, y=52)
-        ttk.Entry(self, state='readonly').place(x=267, y=52, width=159)
+        ttk.Entry(
+            self, textvariable=self.var_imagename_from,
+            state='readonly').place(x=80, y=52, width=160)
+        ttk.Label(self, text="–").place(x=246, y=52)
+        ttk.Entry(
+            self, textvariable=self.var_imagename_to,
+            state='readonly').place(x=267, y=52, width=160)
         ttk.Label(self, text="Total images:").place(x=30, y=100)
-        ttk.Label(self, textvariable=self.images_total, anchor=CENTER).place(
+        ttk.Label(self, textvariable=self.var_images_total, anchor=CENTER).place(
             x=200, y=100, width=200)
-        ttk.Button(self, text="Convert").place(x=150, y=150, width=160)
+        ttk.Button(self, text="Convert", command=self.on_convert_clicked).place(x=150, y=150, width=160)
 
-        ttk.LabelFrame(self, text="PDF for password protection").place(
+        ttk.LabelFrame(self, text="Password protection").place(
             x=10, y=220, width=435, height=200)
         ttk.Button(self, text="📁", style='secondary.Outline.TButton').place(
             x=30, y=260, width=45)
@@ -709,16 +714,44 @@ class StoreFrame(ttk.Frame):
         ent_pwd2.place(x=145, y=366, width=280)
         ttk.Button(self, text="Lock").place(x=150, y=430, width=160)
         self.pack()
-
     
-    def on_imagefolder_clicked(self):
-        images = filedialog.askopenfilenames(title="Select Images", filetypes=[(('png', '*.png'))])
+    def on_imagefolder_clicked(self) -> None:
+        images = filedialog.askopenfilenames(title="Select Images", filetypes=[('png', '*.png')])
         print(images)
+        if images:
+            self._set_formatted_imagenames(images)
+            self.var_images_total.set(len(images))
+            self.image_paths = images
+    
+    def on_convert_clicked(self) -> None:
+        if self.image_paths is None:
+            return
+        savepath = filedialog.asksaveasfilename(title="Save as", filetypes=[('pdf', '*.pdf')])
+        if not savepath:
+            return
+        if not savepath.endswith(('.pdf', '.PDF')):
+            savepath += '.pdf'
+        if isfile(savepath):
+            if not messagebox.askyesno(
+                "Save pdf",
+                "A pdf file with the same name already exists."
+                "\nAre you sure to overwrite it?"):
+                return
+        self.converter.save_as_pdf(self.image_paths, savepath)
+        self.var_imagename_from.set("")
+        self.var_imagename_to.set("")
+        self.var_images_total.set(0)
+        self.image_paths = None
+    
+    def on_pdffolder_clicked(self):
+        pass
 
-    def _set_formatted_imagenames(self, images: tuple[str]):
-        if len(images) == 1:
-            self.imagename_from.set(basename(images[0]))
-            self.imagename_from.set(images[-1])
+    def _set_formatted_imagenames(self, images: tuple[str]) -> None:
+        self.var_imagename_from.set(splitext(basename(images[0]))[0])
+        if len(images) > 1:
+            self.var_imagename_to.set(splitext(basename(images[-1]))[0])
+        else:
+            self.var_imagename_to.set("")
 
 
 class SettingsFrame(ttk.Frame):
