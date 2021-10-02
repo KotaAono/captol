@@ -12,7 +12,7 @@ from memory import Environment
 import img2pdf
 
 
-def unique_path(path: str):
+def get_unique_path(path: str):
     i = 0
     base, ext = os.path.splitext(path)
     while os.path.isfile(path):
@@ -94,21 +94,27 @@ class PassLock:
     def __init__(self, env: Environment):
         self.env = env
 
-    def try_lock(self, pdfpath: str, savepath: str, pw: str) -> bool:
+    def try_encrypt(self, pdfpath: str, savepath: str, pw: str) -> bool:
         lv = self._enc_length()
-        savepath = unique_path(savepath)
+        savepath = get_unique_path(savepath)
         
         try:
             subprocess.run(f'qpdf --encrypt {pw} {pw} {lv} --use-aes=y -- "{pdfpath}" "{savepath}"')
         except Exception as e:
             raise Exception('In encryption process, following error occurred:\n {e}')
 
-    def try_unlock(self, pdfpath: str, savepath: str, pw: str) -> bool:
-        savepath = unique_path(savepath)
+    def try_decrypt(self, pdfpath: str, savepath: str, pw: str) -> bool:
+        savepath = get_unique_path(savepath)
         try:
             subprocess.run(f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"')
         except Exception as e:
             raise Exception('In decryption process, following error occurred:\n {e}')
+
+    def is_encrypted(self, pdfpath: str) -> bool:
+        exitcode = subprocess.run('qpdf --is-encrypted "{pdfpath}"').returncode
+        if exitcode == 0:
+            return True
+        return False
 
     def _enc_length(self) -> int:
         lv = self.env.password_security_level
