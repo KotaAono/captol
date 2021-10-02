@@ -1,6 +1,7 @@
 from __future__ import annotations
 import io
 import os
+from posixpath import basename
 import subprocess
 from typing import Any
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -25,7 +26,7 @@ class PdfConverter:
     def __init__(self, env: Environment):
         self.env = env
 
-    def save_as_pdf(self, image_paths: list[str], savepath: str) -> None:
+    def save_as_pdf(self, image_paths: tuple[str], savepath: str) -> None:
         savedir, savename = os.path.split(savepath)
         savename_noext = os.path.splitext(savename)[0]
         
@@ -76,7 +77,7 @@ class PdfConverter:
         with ZipFile(output_path, 'a') as zf:
             for path in tqdm(image_paths, desc="Exporting to zip"):
                 try:
-                    zf.write(path, compress_type=ZIP_DEFLATED)
+                    zf.write(path, basename(path), compress_type=ZIP_DEFLATED)
                 except FileNotFoundError:
                     pass
         
