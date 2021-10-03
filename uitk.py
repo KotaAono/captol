@@ -25,7 +25,7 @@ def high_resolution() -> None:
 
 
 def noext_basename(path: str) -> str:
-    return splitext(basename(path))
+    return splitext(basename(path))[0]
 
 
 def unique_str(orgstr: str, strlist: list[str]) -> str:
@@ -79,7 +79,7 @@ class Application(ttk.Frame):
         note.place(x=0, y=10, relwidth=1, relheight=1)
         note.add(ExtractTab(
             note, parent=self, env=self.env), text="1. Extract")
-        note.add(StoreFrame(
+        note.add(MergeTab(
             note, parent=self, env=self.env), text=" 2. Merge ")
         ttk.Button(
             self, text="Settings", style='secondary.Outline.TButton',
@@ -395,10 +395,7 @@ class ClipFrame(ttk.Frame):
     def _start_autoclip(self) -> None:
         def _autoclip():
             while self.thread_alive:
-                if self.env.enable_active_image_saver:
-                    self._active_save()
-                else:
-                    self._nodup_save()
+                self._noduplicate_save()
                 sleep(self.env.autoclip_interval)
 
         self.thread_alive = True
@@ -420,27 +417,15 @@ class ClipFrame(ttk.Frame):
         self.xparentwindow.flash()
         self.counter.up(1)
 
-    def _nodup_save(self) -> None:
+    def _noduplicate_save(self) -> None:
         self.xparentwindow.hide_all()
         image = self.clipper.clip()
         self.imbuffer.hold(image)
 
         if self.imbuffer.compare_similarity(past_step=1):
             self.imbuffer.release()
-        else:
-            name = self.counter.next_savepath()
-            self.imbuffer.save(name)
-            self.xparentwindow.flash()
-            self.counter.up(1)
-
-    def _active_save(self) -> None:
-        self.xparentwindow.hide_all()
-        image = self.clipper.clip()
-        self.imbuffer.hold(image)
-
-        if self.imbuffer.compare_similarity(past_step=1):
-            self.imbuffer.release()
-        elif self.imbuffer.compare_similarity(past_step=2):
+        elif self.env.enable_active_image_saver and \
+            self.imbuffer.compare_similarity(past_step=2):
             self.imbuffer.delete(past_step=2)
             self.imbuffer.delete(past_step=1)
             name = self.counter.next_savepath()
@@ -737,7 +722,7 @@ class TransparentWindow(tk.Frame):
         self.pack(fill=BOTH, expand=True)
 
 
-class StoreFrame(ttk.Frame):
+class MergeTab(ttk.Frame):
 
     def __init__(
         self, root: tk.Tk, parent: Application, env: Environment) -> None:
@@ -748,7 +733,6 @@ class StoreFrame(ttk.Frame):
         self.var_imagename_from = tk.StringVar()
         self.var_imagename_to = tk.StringVar()
         self.var_pdfpath = tk.StringVar()
-        # open ...\Univaイベント\JR東海pw.pdf: No such file or directory
         self.var_pwd1 = tk.StringVar()
         self.var_pwd2 = tk.StringVar()
         self.converter = PdfConverter(env)
@@ -847,6 +831,7 @@ class StoreFrame(ttk.Frame):
                 return
         
         self.converter.save_as_pdf(self.image_paths, savepath)
+        messagebox.showinfo("Convert", "Completed!")
         self._init_vars_conversion()
 
     def _on_pdffolder_clicked(self):
