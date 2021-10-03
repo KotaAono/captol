@@ -82,7 +82,7 @@ class Environment:
     default_areas: dict
     default_folder: str
     image_difference_threshold: int
-    enalbe_active_image_saver: bool
+    enable_active_image_saver: bool
     autoclip_interval: float
     enable_pdf_compression: bool
     compression_ratio: int
@@ -98,7 +98,7 @@ class Environment:
             default_areas = {'fullscreen': {'x': 0, 'y': 0, 'w': 1920, 'h': 1080}},
             default_folder = 'C:/Users/hnlPublic/Desktop',
             image_difference_threshold = 1000,
-            enalbe_active_image_saver = True,
+            enable_active_image_saver = True,
             autoclip_interval = 1.0,
             enable_pdf_compression = True,
             compression_ratio = 85,
