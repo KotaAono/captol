@@ -12,7 +12,7 @@ from memory import Environment
 import img2pdf
 
 
-def get_unique_path(path: str):
+def unique_path(path: str):
     i = 0
     base, ext = os.path.splitext(path)
     while os.path.isfile(path):
@@ -94,35 +94,38 @@ class PassLock:
     def __init__(self, env: Environment):
         self.env = env
 
-    def try_encrypt(self, pdfpath: str, savepath: str, pw: str) -> bool:
-        lv = self._enc_length()
-        savepath = get_unique_path(savepath)
-        
-        try:
-            subprocess.run(f'qpdf --encrypt {pw} {pw} {lv} --use-aes=y -- "{pdfpath}" "{savepath}"')
-        except Exception as e:
-            raise Exception('In encryption process, following error occurred:\n {e}')
+    def encrypt(self, pdfpath: str, savepath: str, pw: str):
+        lv = self._key_length()
+        savepath = unique_path(savepath)
+        output = subprocess.run(
+            f'qpdf --encrypt {pw} {pw} {lv} -- "{pdfpath}" "{savepath}"',
+            capture_output=True)
+        if output.returncode == 2:
+            raise Exception(output.stderr.decode())
 
-    def try_decrypt(self, pdfpath: str, savepath: str, pw: str) -> bool:
-        savepath = get_unique_path(savepath)
-        try:
-            subprocess.run(f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"')
-        except Exception as e:
-            raise Exception('In decryption process, following error occurred:\n {e}')
+    def decrypt(self, pdfpath: str, savepath: str, pw: str):
+        savepath = unique_path(savepath)
+        output = subprocess.run(
+            f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"',
+            capture_output=True)
+        if output.returncode == 2:
+            raise Exception(output.stderr.decode())
 
-    def is_encrypted(self, pdfpath: str) -> bool:
-        exitcode = subprocess.run('qpdf --is-encrypted "{pdfpath}"').returncode
-        if exitcode == 0:
+    def check_encryption(self, pdfpath: str) -> bool:
+        returncode = subprocess.run(
+            f'qpdf --is-encrypted "{pdfpath}"').returncode
+        if returncode == 0:
             return True
-        return False
+        elif returncode == 2:
+            return False
 
-    def _enc_length(self) -> int:
+    def _key_length(self) -> str:
         lv = self.env.password_security_level
         if lv == 1:
-            return 40
+            return '40'
         elif lv == 2:
-            return 128
+            return '128'
         elif lv == 3:
-            return 256
+            return '256'
         else:
             raise ValueError(f'Security level must be 1, 2 or 3, not {lv}.')
