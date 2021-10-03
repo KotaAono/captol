@@ -12,15 +12,6 @@ from memory import Environment
 import img2pdf
 
 
-def unique_path(path: str):
-    i = 0
-    base, ext = os.path.splitext(path)
-    while os.path.isfile(path):
-        i += 1
-        path = f"{base} ({i}){ext}"
-    return path
-
-
 class PdfConverter:
 
     def __init__(self, env: Environment):
@@ -96,18 +87,20 @@ class PassLock:
 
     def encrypt(self, pdfpath: str, savepath: str, pw: str):
         lv = self._key_length()
-        savepath = unique_path(savepath)
-        output = subprocess.run(
-            f'qpdf --encrypt {pw} {pw} {lv} -- "{pdfpath}" "{savepath}"',
-            capture_output=True)
+        if pdfpath != savepath:
+            command = f'qpdf --encrypt {pw} {pw} {lv} -- "{pdfpath}" "{savepath}"'
+        else:
+            command = f'qpdf --encrypt {pw} {pw} {lv} -- --replace-input "{pdfpath}"'
+        output = subprocess.run(command, capture_output=True)
         if output.returncode == 2:
             raise Exception(output.stderr.decode())
 
     def decrypt(self, pdfpath: str, savepath: str, pw: str):
-        savepath = unique_path(savepath)
-        output = subprocess.run(
-            f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"',
-            capture_output=True)
+        if pdfpath != savepath:
+            command = f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"'
+        else:
+            command = f'qpdf --password={pw} --decrypt --replace-input "{pdfpath}"'
+        output = subprocess.run(command, capture_output=True)
         if output.returncode == 2:
             raise Exception(output.stderr.decode())
 
