@@ -77,10 +77,10 @@ class Application(ttk.Frame):
         note = self.note = ttk.Notebook(self)
         note.root = self
         note.place(x=0, y=10, relwidth=1, relheight=1)
-        note.add(StoreFrame(
-            note, parent=self, env=self.env), text=" 2. Merge ")
         note.add(ExtractTab(
             note, parent=self, env=self.env), text="1. Extract")
+        note.add(StoreFrame(
+            note, parent=self, env=self.env), text=" 2. Merge ")
         ttk.Button(
             self, text="Settings", style='secondary.Outline.TButton',
             command=self._on_settings_clicked).place(x=360, y=4, width=95)
@@ -868,12 +868,6 @@ class StoreFrame(ttk.Frame):
             return
         if not savepath.endswith(('.pdf', '.PDF')):
             savepath += '.pdf'
-        if isfile(savepath):
-            if not messagebox.askyesno(
-                "Save pdf",
-                "A pdf file with the same name already exists."
-                "\nAre you sure to overwrite it?"):
-                return
         
         try:
             self.passlock.encrypt(pdfpath, savepath, pwd1)
