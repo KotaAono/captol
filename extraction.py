@@ -51,7 +51,7 @@ class ImageCounter:
             self.next()
         return path
 
-    def change_dir(self, basedir: str) -> None:
+    def set_dir(self, basedir: str) -> None:
         self.basedir = basedir
 
     def up(self, value: int) -> None:
