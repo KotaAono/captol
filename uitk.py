@@ -71,7 +71,7 @@ class Application(ttk.Frame):
         self.root.attributes('-topmost', True)
         self.root.geometry("460x530-0+0")
         self.root.resizable(False, False)
-        self.root = Style("darkly").master
+        self.root = Style('flatly').master
 
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
@@ -168,7 +168,7 @@ class ExtractTab(ttk.Frame):
             command=self._on_folder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             frame1, textvariable=self.var_folder,
-            state='readonly').place(x=80, y=52, width=345)
+            state='readonly').place(x=80, y=50, width=345)
         ttk.Label(frame1, text="Past images:").place(x=30, y=100)
         ttk.Label(
             frame1, textvariable=self.var_nimages_total,
@@ -216,6 +216,8 @@ class ExtractTab(ttk.Frame):
 
     def _on_area_selected(self, event: Any) -> None:
         name = self._get_one_lbselection()
+        if name is None:
+            return  # EditのSpinboxを変えるとname=Noneで呼び出されるため
         rect = self.areadb.get(name)
         self._switch_preview(name, rect)
 
@@ -234,6 +236,7 @@ class ExtractTab(ttk.Frame):
             return
         
         self.areadb.delete(name)
+        self.areadb.save()
         self.update_listitems()
         self.xparentwindow.hide()
 
@@ -502,25 +505,42 @@ class EditDialog(ttk.Frame):
             x=10, y=60, width=440, height=130)
         ttk.Button(
             self, text="Direct\nDraw",
-            command=self._on_direct_draw).place(x=30, y=95, width=90, height=80)
+            command=self._on_direct_draw).place(
+                x=30, y=95, width=90, height=80)
         ttk.Label(self, text="x:").place(x=150, y=95)
-        ttk.Spinbox(self, textvariable=self.x, from_=0, to=9999).place(
-            x=180, y=95, width=80)
+        spb_x = ttk.Spinbox(
+            self, textvariable=self.x, from_=0, to=9999,
+            command=self._on_spb_changed)
+        spb_x.place(x=180, y=95, width=80)
         ttk.Label(self, text="width:").place(x=280, y=95)
-        ttk.Spinbox(self, textvariable=self.w, from_=0, to=9999).place(
-            x=350, y=95, width=80)
+        spb_w = ttk.Spinbox(
+            self, textvariable=self.w, from_=0, to=9999,
+            command=self._on_spb_changed)
+        spb_w.place(x=350, y=95, width=80)
         ttk.Label(self, text="y:").place(x=150, y=140)
-        ttk.Spinbox(self, textvariable=self.y, from_=0, to=9999).place(
-            x=180, y=140, width=80)
+        spb_y = ttk.Spinbox(
+            self, textvariable=self.y, from_=0, to=9999,
+            command=self._on_spb_changed)
+        spb_y.place(x=180, y=140, width=80)
         ttk.Label(self, text="height:").place(x=280, y=140)
-        ttk.Spinbox(self, textvariable=self.h, from_=0, to=9999).place(
-            x=350, y=140, width=80)
+        spb_h = ttk.Spinbox(
+            self, textvariable=self.h, from_=0, to=9999,
+            command=self._on_spb_changed)
+        spb_h.place(x=350, y=140, width=80)
         ttk.Button(
             self, text="OK", command=self._on_ok,
             style='secondary.TButton').place(x=40, y=200, width=160)
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
             style='secondary.Outline.TButton').place(x=260, y=200, width=160)
+        spb_x.bind('<Return>', self._on_spb_changed)
+        spb_w.bind('<Return>', self._on_spb_changed)
+        spb_y.bind('<Return>', self._on_spb_changed)
+        spb_h.bind('<Return>', self._on_spb_changed)
+        spb_x.bind('<Button-1>', self._on_spb_changed)
+        spb_w.bind('<Button-1>', self._on_spb_changed)
+        spb_y.bind('<Button-1>', self._on_spb_changed)
+        spb_h.bind('<Button-1>', self._on_spb_changed)
         self.pack(fill=BOTH, expand=True)
 
     def _init_vars(self) -> None:
@@ -542,6 +562,10 @@ class EditDialog(ttk.Frame):
     def _on_direct_draw(self) -> None:
         Drawer(self, self.xparentwindow, self.x, self.y, self.w, self.h)
         self.xparentwindow.hide()
+    
+    def _on_spb_changed(self, event: Any = None) -> None:
+        x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
+        self.xparentwindow.resize(x, y, w, h)
 
     def _on_ok(self) -> None:
         name = self.name.get()
@@ -743,18 +767,18 @@ class StoreFrame(ttk.Frame):
             command=self._on_imagefolder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             self, textvariable=self.var_imagename_from,
-            state='readonly').place(x=80, y=52, width=160)
+            state='readonly').place(x=80, y=50, width=160)
         ttk.Label(self, text="–").place(x=246, y=52)
         ttk.Entry(
             self, textvariable=self.var_imagename_to,
-            state='readonly').place(x=267, y=52, width=160)
+            state='readonly').place(x=267, y=50, width=160)
         ttk.Label(self, text="Total images:").place(x=30, y=100)
         ttk.Label(
             self, textvariable=self.var_nimages_total,
             anchor=CENTER).place(x=200, y=100, width=200)
         ttk.Button(
             self, text="Convert",
-            command=self._on_convert_clicked).place(x=150, y=150, width=160)
+            command=self._on_convert_clicked).place(x=150, y=155, width=160)
         ttk.LabelFrame(
             self, text="Password protection").place(
                 x=10, y=220, width=435, height=200)
@@ -763,16 +787,16 @@ class StoreFrame(ttk.Frame):
             command=self._on_pdffolder_clicked).place(x=30, y=260, width=45)
         ttk.Entry(
             self, textvariable=self.var_pdfpath,
-            state='readonly').place(x=80, y=262, width=345)
+            state='readonly').place(x=80, y=260, width=345)
         ttk.Label(self, text="Password:").place(x=30, y=320)
         ent_pwd1 = self.ent_pwd1 = ttk.Entry(self, textvariable=self.var_pwd1)
-        ent_pwd1.place(x=145, y=317, width=280)
+        ent_pwd1.place(x=145, y=315, width=280)
         ttk.Label(self, text="Again:").place(x=30, y=370)
         ent_pwd2 = self.ent_pwd2 = ttk.Entry(
             self, show="●", textvariable=self.var_pwd2)
-        ent_pwd2.place(x=145, y=366, width=280)
+        ent_pwd2.place(x=145, y=365, width=280)
         btn_lock = self.btn_lock = ttk.Button(self)
-        btn_lock.place(x=150, y=430, width=160)
+        btn_lock.place(x=150, y=435, width=160)
         self.pack(fill=BOTH, expand=True)
     
     def _init_vars_conversion(self) -> None:
