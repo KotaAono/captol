@@ -227,12 +227,12 @@ class ExtractTab(ttk.Frame):
         name = self._get_one_lbselection()
         if name is None:
             return
-        if messagebox.askyesno(
+        if not messagebox.askyesno(
             "Delete Item",
             "Are you sure to delete this item?"
             "\n(The operation cannot be undone.)"):
             return
-            
+        
         self.areadb.delete(name)
         self.update_listitems()
         self.xparentwindow.hide()
@@ -976,9 +976,10 @@ class SettingsWindow(ttk.Frame):
         self.root.destroy()
 
     def _on_cancel(self) -> None:
-        if messagebox.askyesno(
+        if not messagebox.askyesno(
             "Settings", "Do you want to leave? \n(Edits are not saved.)"):
-            self.root.destroy()
+            return
+        self.root.destroy()
 
 
 if __name__ == '__main__':
