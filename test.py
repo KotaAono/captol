@@ -58,7 +58,7 @@ class RandCircles:
     def show(self, seed: int = None, duration: float = 0.001):
         if seed is not None:
             random.seed(seed)
-        
+
         w, h = 1920, 1080
         n = random.randint(5, 10)
         image = np.zeros((h, w, 3), np.uint8)
@@ -151,7 +151,7 @@ class TestImageSave(unittest.TestCase):
         self.clipper = Clipper(env, area)
         self.namer = SequentialNamer('png', '.')
         self.imbuffer = ImageBuffer(env)
-    
+
     def test_normal_save(self):
         for _ in range(5):
             with RandCircles() as rc:
@@ -167,7 +167,7 @@ class TestImageSave(unittest.TestCase):
             with RandCircles() as rc:
                 rc.show(duration=0.1, seed=seed)
                 self._active_save()
-    
+
     def _normal_save(self) -> None:
         image = self.clipper.clip()
         name = self.namer.next()
@@ -180,11 +180,11 @@ class TestImageSave(unittest.TestCase):
         if self.imbuffer.compare_similarity(past_step=1):
             self.imbuffer.release()
             return
-        
+
         if self.imbuffer.compare_similarity(past_step=2):
             self.imbuffer.delete(past_step=2)
             self.imbuffer.delete(past_step=1)
-        
+
         name = self.namer.next()
         self.imbuffer.save(name)
 
@@ -194,7 +194,7 @@ class TestPdf(unittest.TestCase):
     def setUp(self) -> None:
         try_delfile("test.pdf")
         self.env = Environment.load()
-    
+
     def test_compressed_pdf(self) -> None:
         self.env.enable_pdf_compression = True
         self.env.compression_ratio = 60
@@ -213,6 +213,6 @@ class TestPasslock(unittest.TestCase):
         passlock = PassLock(self.env)
         passlock.try_lock("test.pdf", "pw_test.pdf", "test")
         passlock.try_unlock("pw_test.pdf", "nopw_test.pdf", "test")
-        
+
 if __name__ == '__main__':
     unittest.main(verbosity=1)
