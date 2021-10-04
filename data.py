@@ -78,45 +78,32 @@ class Rectangle:
 
 @dataclass
 class Environment:
-    area_file: str
-    default_areas: dict
-    default_folder: str
-    image_difference_threshold: int
-    enable_active_image_saver: bool
-    autoclip_interval: float
-    enable_pdf_compression: bool
-    compression_ratio: int
-    preseve_images_in_zip: bool
-    use_common_password: bool
-    common_password: str
-    password_security_level: Literal[1, 2, 3]
+    theme: str = "darkly"
+    area_file: str = "./areas.json"
+    default_save_folder: str = "C:/Users/hnlPublic/Desktop"
+    pixel_difference_threshold: int = 10000
+    delete_duplicate_images: bool = True
+    auto_clip_interval: float = 1.0
+    compress_before_pdf_conversion: bool = True
+    compression_ratio: int = 85
+    pack_used_images_in_zip: bool = True
+    password_security_level: int = 3
 
-    @classmethod
-    def load(cls) -> Environment:
-        default = dict(
-            area_file = './areas.json',
-            default_areas = {'fullscreen': {'x': 0, 'y': 0, 'w': 1920, 'h': 1080}},
-            default_folder = 'C:/Users/hnlPublic/Desktop',
-            image_difference_threshold = 1000,
-            enable_active_image_saver = True,
-            autoclip_interval = 1.0,
-            enable_pdf_compression = True,
-            compression_ratio = 85,
-            preseve_images_in_zip = True,
-            use_common_password = True,
-            common_password = "conf",
-            password_security_level = 2
-        )
+    def __post_init__(self) -> None:
+        self.load()
 
+    def load(self) -> Environment:
         try:
             with open(ENV_FILE, 'r') as f:
-                settings = json.load(f)
-            instance = cls(**settings)
-        except Exception as e:
-            print(e)
-            instance = cls(**default)
-        return instance
+                jsondict = json.load(f)
+            self._set_data(jsondict)
+        except Exception:
+            pass
 
     def save(self) -> None:
         with open(ENV_FILE, 'w') as f:
             json.dump(asdict(self), f, indent=4)
+
+    def _set_data(self, jsondict: dict) -> None:
+        for name, var in jsondict.items():
+            self.__setattr__(name, var)
