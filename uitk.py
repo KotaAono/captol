@@ -12,16 +12,16 @@ from typing import Any
 
 from ttkbootstrap import Style
 
-from memory import AreaDB, Rectangle, Environment
+from data import AreaDB, Rectangle, Environment
 from extraction import Clipper, ImageCounter, ImageBuffer
-from storage import PdfConverter, PassLock
+from merging import PdfConverter, PassLock
 
 
 ICONFILE = 'favicon.ico'
 
 
 def high_resolution() -> None:
-    windll.shcore.SetProcessDpiAwareness(True)    
+    windll.shcore.SetProcessDpiAwareness(True)
 
 
 def noext_basename(path: str) -> str:
@@ -138,14 +138,14 @@ class ExtractTab(ttk.Frame):
                 widget['state'] = DISABLED
             except tk.TclError:
                 pass
-    
+
     def release_widgets(self) -> None:
         for widget in self.frame1.winfo_children():
             try:
                 widget['state'] = NORMAL
             except tk.TclError:
                 pass
-    
+
     def update_listitems(self, activate_name : str = None) -> None:
         self._reset_clip_areas(self.areadb.namelist)
         if activate_name is not None:
@@ -234,7 +234,7 @@ class ExtractTab(ttk.Frame):
             "Are you sure to delete this item?"
             "\n(The operation cannot be undone.)"):
             return
-        
+
         self.areadb.delete(name)
         self.areadb.save()
         self.update_listitems()
@@ -250,7 +250,7 @@ class ExtractTab(ttk.Frame):
             return
         self.xparentwindow.hide()
         EditDialog(parent=self, areadb=self.areadb, name=name)
-        
+
     def _on_set_clicked(self) -> None:
         name = self._get_one_lbselection()
         if name is None:
@@ -263,7 +263,7 @@ class ExtractTab(ttk.Frame):
         self.var_folder.set(shorten(folder, maxlen=4))
         self.counter.set_dir(folder)
         self.counter.initialize_count()
-    
+
     def _reset_clip_areas(self, keys: list) -> None:
         self.var_listitems.set(keys)
 
@@ -280,7 +280,7 @@ class ExtractTab(ttk.Frame):
         idx = self.areadb.namelist.index(name)
         self.lb_areas.select_set(idx)
         self.lb_areas.see(idx)
-    
+
     def _get_one_lbselection(self) -> str | None:
         idx = self.lb_areas.curselection()
         if idx == ():
@@ -315,21 +315,21 @@ class ClipFrame(ttk.Frame):
         self.clipper.register(rect)
         self.var_areaname.set(name)
         self.xparentwindow.resize(**asdict(rect))
-    
+
     def block_widgets(self) -> None:
         for widget in self.winfo_children():
             try:
                 widget['state'] = DISABLED
             except tk.TclError:
                 pass
-    
+
     def release_widgets(self) -> None:
         for widget in self.winfo_children():
             try:
                 widget['state'] = NORMAL
             except tk.TclError:
                 pass
-    
+
     def is_activated_byname(self, name: str) -> bool:
         if self.fold_button['state'] == DISABLED:
             return False
@@ -402,7 +402,7 @@ class ClipFrame(ttk.Frame):
         self.thread_alive = True
         thread = self.thread = Thread(target=_autoclip)
         thread.start()
-    
+
     def _end_autoclip(self) -> None:
         if self.thread is not None:
             self.thread_alive = False
@@ -460,14 +460,14 @@ class EditDialog(ttk.Frame):
         self._setup_root()
         self._create_widgets()
         self._init_vars()
-    
+
     def block_widgets(self) -> None:
         for widget in self.winfo_children():
             try:
                 widget['state'] = DISABLED
             except tk.TclError:
                 pass
-    
+
     def release_widgets(self) -> None:
         for widget in self.winfo_children():
             try:
@@ -548,7 +548,7 @@ class EditDialog(ttk.Frame):
     def _on_direct_draw(self) -> None:
         Drawer(self, self.xparentwindow, self.x, self.y, self.w, self.h)
         self.xparentwindow.hide()
-    
+
     def _on_spb_changed(self, event: Any = None) -> None:
         x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
         self.xparentwindow.resize(x, y, w, h)
@@ -558,7 +558,7 @@ class EditDialog(ttk.Frame):
         x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
         if not self._validate(name, x, y, w, h):
             return
-        
+
         if name != self.init_name:
             if self.areadb.has_name(name):
                 if not messagebox.askyesno(
@@ -568,7 +568,7 @@ class EditDialog(ttk.Frame):
                     return
             if self.init_name is not None:
                 self.areadb.delete(self.init_name)
-        
+
         rect = Rectangle(x, y, w, h)
         self.areadb.write(name, rect)
         self.areadb.save()
@@ -669,7 +669,7 @@ class TransparentWindow(tk.Frame):
 
     def hide(self) -> None:
         self.root.withdraw()
-    
+
     def hide_all(self) -> None:
         for root in TransparentWindow.roots:
             try:
@@ -783,7 +783,7 @@ class MergeTab(ttk.Frame):
         btn_lock = self.btn_lock = ttk.Button(self)
         btn_lock.place(x=150, y=435, width=160)
         self.pack(fill=BOTH, expand=True)
-    
+
     def _init_vars_conversion(self) -> None:
         self.var_imagename_from.set("")
         self.var_imagename_to.set("")
@@ -800,13 +800,13 @@ class MergeTab(ttk.Frame):
         self.btn_lock['text'] = "Lock/Unlock"
         self.btn_lock['command'] = lambda: None
         self.pdf_path = None
-    
+
     def _on_imagefolder_clicked(self) -> None:
         images = filedialog.askopenfilenames(
             title="Select Images", filetypes=[('png', '*.png')])
         if not images:
             return
-        
+
         self.var_imagename_from.set(noext_basename(images[0]))
         if len(images) > 1:
             self.var_imagename_to.set(noext_basename(images[-1]))
@@ -814,7 +814,7 @@ class MergeTab(ttk.Frame):
             self.var_imagename_to.set("")
         self.var_nimages_total.set(len(images))
         self.image_paths = images
-    
+
     def _on_convert_clicked(self) -> None:
         if self.image_paths is None:
             return
@@ -830,7 +830,7 @@ class MergeTab(ttk.Frame):
                 "A pdf file with the same name already exists."
                 "\nAre you sure to overwrite it?"):
                 return
-        
+
         self.converter.save_as_pdf(self.image_paths, savepath)
         messagebox.showinfo("Convert", "Completed!")
         self._init_vars_conversion()
@@ -860,7 +860,7 @@ class MergeTab(ttk.Frame):
         pdfpath = self.pdf_path
         if pdfpath is None:
             return
-        
+
         pwd1, pwd2 = self.var_pwd1.get(), self.var_pwd2.get()
         if pwd1 == "":
             messagebox.showerror(
@@ -871,26 +871,26 @@ class MergeTab(ttk.Frame):
                 "Invalid input",
                 "Enter the same password in the second entry box.")
             return
-        
+
         savepath = filedialog.asksaveasfilename(
             title="Save as", filetypes=[('pdf', '*.pdf')])
         if not savepath:
             return
         if not savepath.endswith(('.pdf', '.PDF')):
             savepath += '.pdf'
-        
+
         try:
             self.passlock.encrypt(pdfpath, savepath, pwd1)
             messagebox.showinfo("Lock", "Completed!")
             self._init_vars_protection()
         except Exception as e:
             messagebox.showerror("Lock", e)
-    
+
     def _unlock(self) -> None:
         pdfpath = self.pdf_path
         if pdfpath is None:
             return
-        
+
         pwd1 = self.var_pwd1.get()
         if pwd1 == "":
             messagebox.showerror(
@@ -907,7 +907,7 @@ class MergeTab(ttk.Frame):
 
 
 class SettingsWindow(ttk.Frame):
-    
+
     def __init__(self, parent: Application, env: Environment) -> None:
         root = self.root = tk.Toplevel(parent)
         super().__init__(root)
@@ -958,7 +958,7 @@ class SettingsWindow(ttk.Frame):
             self, text="Cancel", command=self._on_cancel,
             style='secondary.Outline.TButton').place(x=260, y=270, width=160)
         self.pack(fill=BOTH, expand=True)
-    
+
     def _init_vars(self) -> None:
         env = self.env
         self.var_default_folder.set(env.default_folder)
@@ -972,7 +972,7 @@ class SettingsWindow(ttk.Frame):
             self.spb_ratio['state'] = DISABLED
         else:
             self.spb_ratio['state'] = NORMAL
-    
+
     def _on_ok(self) -> None:
         env = self.env
         env.default_folder = self.var_default_folder.get()
