@@ -20,12 +20,12 @@ class PdfConverter:
     def save_as_pdf(self, image_paths: tuple[str], savepath: str) -> None:
         savedir, savename = os.path.split(savepath)
         savename_noext = os.path.splitext(savename)[0]
-        
+
         zip_dir = os.path.join(savedir, 'archives')
         pdf = self._fetch_images_as_pdf(image_paths)
         self._dump_in_pdf(pdf, savedir, savename_noext)
         self._pack_usedimages_into_zip(image_paths, zip_dir, savename_noext)
-    
+
     def _fetch_images_as_pdf(self, image_paths: list[str]) -> Any:
         do_compress = self.env.enable_pdf_compression
         quality = self.env.compression_ratio
@@ -38,25 +38,25 @@ class PdfConverter:
                 images.append(image)
             except FileNotFoundError:
                 pass
-        
+
         return img2pdf.convert(images)
-    
-    def _compress(self, image: Image, quality: int) -> Image:   
+
+    def _compress(self, image: Image, quality: int) -> Image:
         buffer = io.BytesIO()
         image.save(buffer, format="JPEG", quality=quality)
         return buffer.getvalue()
-    
+
     def _dump_in_pdf(self, pdf: Any, output_dir: str, basename: str) -> None:
         output_path = os.path.join(output_dir, basename+'.pdf')
         with open(output_path, 'ab') as f:
             f.write(pdf)
-    
+
     def _pack_usedimages_into_zip(self, image_paths: list[str], output_dir: str, basename: str) -> None:
         output_path = os.path.join(output_dir, basename+'.zip')
         os.makedirs(output_dir, exist_ok=True)
 
         self._create_zip(image_paths, output_path)
-        self._remove_packed_images(image_paths)        
+        self._remove_packed_images(image_paths)
 
     def _create_zip(self, image_paths: list[str], output_path: str):
         if os.path.isfile(output_path):
@@ -64,14 +64,14 @@ class PdfConverter:
                 os.remove(output_path)
             except FileNotFoundError:
                 pass
-        
+
         with ZipFile(output_path, 'a') as zf:
             for path in tqdm(image_paths, desc="Exporting to zip"):
                 try:
                     zf.write(path, basename(path), compress_type=ZIP_DEFLATED)
                 except FileNotFoundError:
                     pass
-        
+
     def _remove_packed_images(self, image_paths: list[str]) -> None:
         for path in tqdm(image_paths, "Removing images"):
             try:

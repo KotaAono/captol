@@ -80,7 +80,7 @@ class Application(ttk.Frame):
         note.add(ExtractTab(
             note, parent=self, env=self.env), text="1. Extract")
         note.add(MergeTab(
-            note, parent=self, env=self.env), text=" 2. Merge ")
+            note, parent=self, env=self.env), text="2. Merge  ")
         ttk.Button(
             self, text="Settings", style='secondary.Outline.TButton',
             command=self._on_settings_clicked).place(x=360, y=4, width=95)
@@ -182,7 +182,7 @@ class ExtractTab(ttk.Frame):
             frame1, text="Clip area").place(x=10, y=190, width=435, height=220)
         lb_areas = self.lb_areas = tk.Listbox(
             frame1, listvariable=self.var_listitems)
-        lb_areas.place(x=30, y=230, height=160)
+        lb_areas.place(x=30, y=230, height=158)
         ttk.Button(
             frame1, text="+",
             command=self._on_plus_clicked).place(x=275, y=230, width=70)
@@ -193,8 +193,8 @@ class ExtractTab(ttk.Frame):
             frame1, text="Edit",
             command=self._on_edit_clicked).place(x=275, y=280, width=150)
         ttk.Button(
-            frame1, text="Launch", style='warning.TButton',
-            command=self._on_launch_clicked).place(x=275, y=350, width=150)
+            frame1, text="Set", style='warning.TButton',
+            command=self._on_set_clicked).place(x=275, y=350, width=150)
         lb_areas.bind('<<ListboxSelect>>', self._on_area_selected)
 
         frame2 = self.frame2 = ttk.Frame(self)
@@ -251,7 +251,7 @@ class ExtractTab(ttk.Frame):
         self.xparentwindow.hide()
         EditDialog(parent=self, areadb=self.areadb, name=name)
         
-    def _on_launch_clicked(self) -> None:
+    def _on_set_clicked(self) -> None:
         name = self._get_one_lbselection()
         if name is None:
             return
@@ -388,6 +388,7 @@ class ClipFrame(ttk.Frame):
         if messagebox.askyesno(
             "Autoclip", "Do you want to enable Autoclip?"):
             self.parent.block_widgets()
+            sleep(0.5)  # messageboxをキャプチャしないように
             self._start_autoclip()
         else:
             self.var_clipmode.set(1)
