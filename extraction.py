@@ -2,10 +2,8 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import dataclass
 from datetime import date
-from glob import iglob, glob
 import os
 import pathlib
-from typing import final
 from PIL import Image, ImageGrab
 import re
 import tkinter as tk
@@ -22,7 +20,7 @@ class Clipper:
 
     def register(self, area: Rectangle) -> None:
         self.area = area
-    
+
     def clip(self) -> Image:
         area = self.area
         x1, y1 = area.x, area.y
@@ -48,7 +46,7 @@ class ImageCounter:
         name = f'{self.date}_{nextnum}.{self.ext}'
         path = os.path.join(self.basedir, name)
         if os.path.isfile(path):
-            self.next()
+            self.next_savepath()
         return path
 
     def set_dir(self, basedir: str) -> None:
@@ -73,7 +71,7 @@ class ImageCounter:
         self.var_past.set(n_past)
         self.var_today.set(n_today)
         self.lastnum = max(todaynums+[0])
-    
+
     def _set_stemname(self) -> None:
         today = format(date.today())
         self.date = today
@@ -91,10 +89,10 @@ class ImageBuffer:
         self.q = deque(maxlen=2)
         self.new = None
 
-    def hold(self, image: Image) -> None:     
+    def hold(self, image: Image) -> None:
         self.new = PathAssignedImage(image)
-    
-    def release(self) -> None:        
+
+    def release(self) -> None:
         self.new = None
 
     def save(self, path: str) -> None:
@@ -116,23 +114,23 @@ class ImageBuffer:
             pass
         finally:
             del self.q[idx]
-    
+
     def compare_similarity(self, past_step: int) -> bool:
         if self.new is None:
             raise Exception('No object to compare. Hold new image first.')
-        
+
         if past_step > len(self.q):
             return False
-        
+
         idx = -past_step
         target = self.q[idx]
         new = self.new
-        
+
         pix = self._calculate_different_pixels(new.gray, target.gray)
         if pix > self.env.image_difference_threshold:
             return False
         return True
-    
+
     def _calculate_different_pixels(self, gray_image1: Image, gray_image2: Image) -> float:
         dif = cv2.absdiff(gray_image1, gray_image2)
         blr = cv2.GaussianBlur(dif, (15, 15), 5)
