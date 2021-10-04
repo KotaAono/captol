@@ -75,7 +75,7 @@ if __name__ == '__main__':
         windows_high_resolution()
     except:
         pass
-    
+
     root = tk.Tk()
     root.attributes('-topmost', True)
     TkViewer(root).run()
