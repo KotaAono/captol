@@ -71,7 +71,7 @@ class Application(ttk.Frame):
         self.root.attributes('-topmost', True)
         self.root.geometry("460x530-0+0")
         self.root.resizable(False, False)
-        self.root = Style('flatly').master
+        self.root = Style('darkly').master
 
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
