@@ -8,7 +8,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
 from tqdm import tqdm
-from memory import Environment
+from data import Environment
 import img2pdf
 
 
