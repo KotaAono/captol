@@ -24,7 +24,8 @@ class PdfConverter:
         zip_dir = os.path.join(savedir, 'archives')
         pdf = self._fetch_images_as_pdf(image_paths)
         self._dump_in_pdf(pdf, savedir, savename_noext)
-        self._pack_usedimages_into_zip(image_paths, zip_dir, savename_noext)
+        if self.env.zip_converted_images:
+            self._pack_usedimages_into_zip(image_paths, zip_dir, savename_noext)
 
     def _fetch_images_as_pdf(self, image_paths: list[str]) -> Any:
         do_compress = self.env.compress_before_pdf_conversion
