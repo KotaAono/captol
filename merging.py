@@ -27,7 +27,7 @@ class PdfConverter:
         self._pack_usedimages_into_zip(image_paths, zip_dir, savename_noext)
 
     def _fetch_images_as_pdf(self, image_paths: list[str]) -> Any:
-        do_compress = self.env.enable_pdf_compression
+        do_compress = self.env.compress_before_pdf_conversion
         quality = self.env.compression_ratio
         images = list()
         for path in tqdm(image_paths, desc="Collecting images"):

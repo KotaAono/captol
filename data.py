@@ -53,7 +53,7 @@ class AreaDB:
             json.dump(dict_areas, f, indent=4)
 
     def _load_defaults(self) -> dict[dict]:
-        return self.env.default_areas
+        return {"edit me": {"x": 400, "y": 300, "w": 800, "h": 600}}
 
     def _store_astype_rect(self, dict_areas: dict[dict]) -> None:
         rect_areas = dict()
@@ -86,13 +86,13 @@ class Environment:
     auto_clip_interval: float = 1.0
     compress_before_pdf_conversion: bool = True
     compression_ratio: int = 85
-    pack_used_images_in_zip: bool = True
+    zip_converted_images: bool = True
     password_security_level: int = 3
 
     def __post_init__(self) -> None:
         self.load()
 
-    def load(self) -> Environment:
+    def load(self) -> None:
         try:
             with open(ENV_FILE, 'r') as f:
                 jsondict = json.load(f)

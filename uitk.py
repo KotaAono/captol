@@ -51,7 +51,7 @@ class Application(ttk.Frame):
         super().__init__(root)
         self.root = root
         self.settingswindow = None
-        self.env = Environment.load()
+        self.env = Environment()
 
         self._setup_root()
         self._create_widgets()
@@ -117,7 +117,7 @@ class ExtractTab(ttk.Frame):
 
         self._create_widgets()
         self._init_vars()
-        self._reset_folder_info(env.default_folder)
+        self._reset_folder_info(env.default_save_folder)
         self._reset_clip_areas(areadb.namelist)
 
     def shrink(self) -> None:
@@ -397,7 +397,7 @@ class ClipFrame(ttk.Frame):
         def _autoclip():
             while self.thread_alive:
                 self._noduplicate_save()
-                sleep(self.env.autoclip_interval)
+                sleep(self.env.auto_clip_interval)
 
         self.thread_alive = True
         thread = self.thread = Thread(target=_autoclip)
@@ -425,7 +425,7 @@ class ClipFrame(ttk.Frame):
 
         if self.imbuffer.compare_similarity(past_step=1):
             self.imbuffer.release()
-        elif self.env.enable_active_image_saver and \
+        elif self.env.delete_duplicate_images and \
             self.imbuffer.compare_similarity(past_step=2):
             self.imbuffer.delete(past_step=2)
             self.imbuffer.delete(past_step=1)
@@ -913,10 +913,15 @@ class SettingsWindow(ttk.Frame):
         super().__init__(root)
         self.parent = parent
         self.env = env
-        self.var_default_folder = tk.StringVar()
-        self.var_enable_active_image_saver = tk.BooleanVar()
-        self.var_enable_pdf_compression = tk.BooleanVar()
+        self.var_theme = tk.StringVar()
+        self.var_area_file = tk.StringVar()
+        self.var_default_save_folder = tk.StringVar()
+        self.var_pixel_difference_threshold = tk.IntVar()
+        self.var_delete_duplicate_images = tk.BooleanVar()
+        self.var_auto_clip_interval = tk.IntVar()
+        self.var_compress_before_pdf_conversion = tk.BooleanVar()
         self.var_compression_ratio = tk.IntVar()
+        self.var_zip_converted_images = tk.BooleanVar()
         self.var_password_security_level = tk.IntVar()
 
         self._setup_root()
@@ -929,19 +934,20 @@ class SettingsWindow(ttk.Frame):
         self.root.geometry('460x320')
         self.root.resizable(False, False)
         self.root.attributes('-topmost', True)
+        self.root.protocol('WM_DELETE_WINDOW', self._on_cancel)
 
     def _create_widgets(self) -> None:
         ttk.Label(self, text="Default folder").place(x=20, y=20)
         ttk.Entry(
             self,
-            textvariable=self.var_default_folder).place(x=20, y=50, width=420)
+            textvariable=self.var_default_save_folder).place(x=20, y=50, width=420)
         ttk.Label(self, text="Enable Active Image Saver").place(x=20, y=100)
         ttk.Checkbutton(
             self,
-            variable=self.var_enable_active_image_saver).place(x=400, y=100)
+            variable=self.var_delete_duplicate_images).place(x=400, y=100)
         ttk.Label(self, text="Enable pdf compression").place(x=20, y=140)
         ttk.Checkbutton(
-            self, variable=self.var_enable_pdf_compression,
+            self, variable=self.var_compress_before_pdf_conversion,
             command=self._on_enable_comp).place(x=400, y=140)
         ttk.Label(self, text="Compression ratio").place(x=20, y=180)
         spb_ratio = self.spb_ratio = ttk.Spinbox(
@@ -961,28 +967,38 @@ class SettingsWindow(ttk.Frame):
 
     def _init_vars(self) -> None:
         env = self.env
-        self.var_default_folder.set(env.default_folder)
-        self.var_enable_active_image_saver.set(env.enable_active_image_saver)
-        self.var_enable_pdf_compression.set(env.enable_pdf_compression)
+        self.var_theme.set(env.theme)
+        self.var_area_file.set(env.area_file)
+        self.var_default_save_folder.set(env.default_save_folder)
+        self.var_pixel_difference_threshold.set(env.pixel_difference_threshold)
+        self.var_delete_duplicate_images.set(env.delete_duplicate_images)
+        self.var_auto_clip_interval.set(env.auto_clip_interval)
+        self.var_compress_before_pdf_conversion.set(env.compress_before_pdf_conversion)
         self.var_compression_ratio.set(env.compression_ratio)
+        self.var_zip_converted_images.set(env.zip_converted_images)
         self.var_password_security_level.set(env.password_security_level)
 
     def _on_enable_comp(self) -> None:
-        if not self.var_enable_pdf_compression.get():
+        if not self.var_compress_before_pdf_conversion.get():
             self.spb_ratio['state'] = DISABLED
         else:
             self.spb_ratio['state'] = NORMAL
 
     def _on_ok(self) -> None:
         env = self.env
-        env.default_folder = self.var_default_folder.get()
-        env.enable_active_image_saver = \
-            self.var_enable_active_image_saver.get()
-        env.enable_pdf_compression = self.var_enable_pdf_compression.get()
+        env.theme = self.var_theme.get()
+        env.area_file = self.var_area_file.get()
+        env.default_save_folder = self.var_default_save_folder.get()
+        env.pixel_difference_threshold = env.pixel_difference_threshold.get()
+        env.delete_duplicate_images = \
+            self.var_delete_duplicate_images.get()
+        env.auto_clip_interval = self.var_auto_clip_interval.get()
+        env.compress_before_pdf_conversion = self.var_compress_before_pdf_conversion.get()
         env.compression_ratio = self.var_compression_ratio.get()
+        env.zip_converted_images = self.var_zip_converted_images.get()
         env.password_security_level = self.var_password_security_level.get()
-        self.env = env
         env.save()
+        self.env = env
         self.root.destroy()
 
     def _on_cancel(self) -> None:

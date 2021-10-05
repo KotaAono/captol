@@ -127,7 +127,7 @@ class ImageBuffer:
         new = self.new
 
         pix = self._calculate_different_pixels(new.gray, target.gray)
-        if pix > self.env.image_difference_threshold:
+        if pix > self.env.pixel_difference_threshold:
             return False
         return True
 
