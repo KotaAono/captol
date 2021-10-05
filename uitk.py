@@ -71,7 +71,7 @@ class Application(ttk.Frame):
         self.root.attributes('-topmost', True)
         self.root.geometry("460x530-0+0")
         self.root.resizable(False, False)
-        self.root = Style('darkly').master
+        self.root = Style(self.env.theme).master
 
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
@@ -269,7 +269,9 @@ class ExtractTab(ttk.Frame):
 
     def _switch_preview(self, name: str, rect: Rectangle) -> None:
         if name != self.prevname:
+            self.xparentwindow.hide()
             self.xparentwindow.resize(**asdict(rect))
+            sleep(0.05)
             self.xparentwindow.preview()
             self.prevname = name
         else:
@@ -925,45 +927,71 @@ class SettingsWindow(ttk.Frame):
         self.var_password_security_level = tk.IntVar()
 
         self._setup_root()
-        self._create_widgets()
         self._init_vars()
+        self._create_widgets()
 
     def _setup_root(self) -> None:
         self.root.iconbitmap(ICONFILE)
         self.root.title("Environment Settings")
-        self.root.geometry('460x320')
+        self.root.geometry('460x560')
         self.root.resizable(False, False)
         self.root.attributes('-topmost', True)
         self.root.protocol('WM_DELETE_WINDOW', self._on_cancel)
 
     def _create_widgets(self) -> None:
-        ttk.Label(self, text="Default folder").place(x=20, y=20)
+        ttk.Label(self, text="Theme").place(x=20, y=20)
+        cbb_theme = ttk.Combobox(
+            self, textvariable=self.var_theme, values=[
+                'cosmo', 'flatly', 'journal', 'literal', 'lumen', 'minty',
+                'pulse', 'sandstone', 'united', 'yeti', 'cyborg', 'darkly',
+                'solar', 'superhero'])
+        cbb_theme.place(x=320, y=20, width=120)
+        ttk.Label(self, text="Area file").place(x=20, y=60)
         ttk.Entry(
             self,
-            textvariable=self.var_default_save_folder).place(x=20, y=50, width=420)
-        ttk.Label(self, text="Enable Active Image Saver").place(x=20, y=100)
+            textvariable=self.var_area_file).place(x=20, y=90, width=420)
+        ttk.Label(self, text="Default save folder").place(x=20, y=140)
+        ttk.Entry(
+            self, textvariable=self.var_default_save_folder).place(
+                x=20, y=170, width=420)
+        ttk.Label(self, text="Pixel difference threshold").place(x=20, y=220)
+        ttk.Spinbox(
+            self, textvariable=self.var_pixel_difference_threshold,
+            from_=0, to=999999, increment=1000).place(x=320, y=220, width=120)
+        ttk.Label(self, text="Delete duplicate images").place(x=20, y=260)
         ttk.Checkbutton(
             self,
-            variable=self.var_delete_duplicate_images).place(x=400, y=100)
-        ttk.Label(self, text="Enable pdf compression").place(x=20, y=140)
+            variable=self.var_delete_duplicate_images).place(x=375, y=265)
+        ttk.Label(self, text="Auto clip interval").place(x=20, y=300)
+        ttk.Spinbox(
+            self, textvariable=self.var_auto_clip_interval,
+            from_=0.5, to=10, increment=0.1).place(x=320, y=300, width=120)
+        ttk.Label(self, text="Compress before pdf conversion").place(x=20, y=340)
         ttk.Checkbutton(
             self, variable=self.var_compress_before_pdf_conversion,
-            command=self._on_enable_comp).place(x=400, y=140)
-        ttk.Label(self, text="Compression ratio").place(x=20, y=180)
+            command=self._on_enable_comp).place(x=375, y=345)
+        ttk.Label(self, text="Compression ratio").place(x=20, y=380)
         spb_ratio = self.spb_ratio = ttk.Spinbox(
             self, textvariable=self.var_compression_ratio, from_=60, to=90)
-        spb_ratio.place(x=380, y=180, width=60)
-        ttk.Label(self, text="Password security level").place(x=20, y=220)
+        spb_ratio.place(x=320, y=380, width=120)
+        ttk.Label(self, text="Zip converted images").place(x=20, y=420)
+        ttk.Checkbutton(
+            self, variable=self.var_zip_converted_images).place(x=375, y=425)
+        ttk.Label(self, text="Password security level").place(x=20, y=460)
         ttk.Spinbox(
             self, textvariable=self.var_password_security_level,
-            from_=1, to=3).place(x=380, y=220, width=60)
+            from_=1, to=3).place(x=320, y=460, width=120)
         ttk.Button(
             self, text="OK", command=self._on_ok,
-            style='secondary.TButton').place(x=40, y=270, width=160)
+            style='secondary.TButton').place(x=40, y=510, width=160)
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
-            style='secondary.Outline.TButton').place(x=260, y=270, width=160)
+            style='secondary.Outline.TButton').place(x=260, y=510, width=160)
         self.pack(fill=BOTH, expand=True)
+        cbb_theme.bind(
+            '<<ComboboxSelected>>',
+            lambda event: self._change_theme(self.var_theme.get()))
+        self._change_theme(self.var_theme.get())
 
     def _init_vars(self) -> None:
         env = self.env
@@ -989,11 +1017,13 @@ class SettingsWindow(ttk.Frame):
         env.theme = self.var_theme.get()
         env.area_file = self.var_area_file.get()
         env.default_save_folder = self.var_default_save_folder.get()
-        env.pixel_difference_threshold = env.pixel_difference_threshold.get()
+        env.pixel_difference_threshold = \
+            self.var_pixel_difference_threshold.get()
         env.delete_duplicate_images = \
             self.var_delete_duplicate_images.get()
         env.auto_clip_interval = self.var_auto_clip_interval.get()
-        env.compress_before_pdf_conversion = self.var_compress_before_pdf_conversion.get()
+        env.compress_before_pdf_conversion = \
+            self.var_compress_before_pdf_conversion.get()
         env.compression_ratio = self.var_compression_ratio.get()
         env.zip_converted_images = self.var_zip_converted_images.get()
         env.password_security_level = self.var_password_security_level.get()
@@ -1005,7 +1035,11 @@ class SettingsWindow(ttk.Frame):
         if not messagebox.askyesno(
             "Settings", "Do you want to leave? \n(Edits are not saved.)"):
             return
+        self._change_theme(self.env.theme)
         self.root.destroy()
+
+    def _change_theme(self, theme: str) -> None:
+        Style().theme_use(theme)
 
 
 if __name__ == '__main__':
