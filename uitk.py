@@ -44,6 +44,11 @@ def shorten(path: str, maxlen: int) -> str:
         return '\\'.join(['...', dirlist[-2], dirlist[-1]])
     return path
 
+def append_ext(path: str, ext: str) -> str:
+    if not path.endswith((ext.lower(), ext.upper())):
+        return path + ext.lower()
+    return path
+
 
 class Application(ttk.Frame):
 
@@ -824,19 +829,9 @@ class MergeTab(ttk.Frame):
             title="Save as", filetypes=[('pdf', '*.pdf')])
         if not savepath:
             return
-        if not savepath.endswith(('.pdf', '.PDF')):
-            savepath += '.pdf'
-        if isfile(savepath):
-            if not messagebox.askyesno(
-                "Save pdf",
-                "A pdf file with the same name already exists."
-                "\nAre you sure to overwrite it?"):
-                return
-        pb = Progressbar(self, "Convert", "Converting images into pdfs and merging them...")
-        pb.start()
-        Thread(
-            target=lambda: self.converter.save_as_pdf(self.image_paths, savepath)).start()
-        pb.stop()
+        savepath = append_ext(savepath, '.pdf')
+
+        self.converter.save_as_pdf(self.image_paths, savepath)
         messagebox.showinfo("Convert", "Completed!")
         self._init_vars_conversion()
 
@@ -865,92 +860,48 @@ class MergeTab(ttk.Frame):
         pdfpath = self.pdf_path
         if pdfpath is None:
             return
-
         pwd1, pwd2 = self.var_pwd1.get(), self.var_pwd2.get()
-        if pwd1 == "":
-            messagebox.showerror(
-                "Invalid input", "Enter a password in first entry box.")
+        if not self._verify(pwd1, pwd2):
             return
-        if pwd1 != pwd2:
-            messagebox.showerror(
-                "Invalid input",
-                "Enter the same password in the second entry box.")
-            return
-
         savepath = filedialog.asksaveasfilename(
             title="Save as", filetypes=[('pdf', '*.pdf')])
         if not savepath:
             return
-        if not savepath.endswith(('.pdf', '.PDF')):
-            savepath += '.pdf'
+        savepath = append_ext(savepath, '.pdf')
 
-        pb = Progressbar(self, "Lock", "Attempting to encrypt...")
-        pb.start()
         try:
-            Thread(target=lambda: self.passlock.encrypt(pdfpath, savepath, pwd1)).start()
-            pb.stop()
+            self.passlock.encrypt(pdfpath, savepath, pwd1)
             messagebox.showinfo("Lock", "Completed!")
             self._init_vars_protection()
         except Exception as e:
             messagebox.showerror("Lock", e)
-            pb.stop()
 
     def _unlock(self) -> None:
         pdfpath = self.pdf_path
         if pdfpath is None:
             return
-
         pwd1 = self.var_pwd1.get()
-        if pwd1 == "":
-            messagebox.showerror(
-                "Invalid input", "Enter a password in first entry box.")
+        if not self._verify(pwd1):
             return
 
-        pb = Progressbar(self, "Unlock", "Attempting to decrypt...")
-        pb.start()
         try:
-            Thread(target=lambda: self.passlock.decrypt(pdfpath, pdfpath, pwd1)).start()
-            pb.stop()
+            self.passlock.decrypt(pdfpath, pdfpath, pwd1)
             messagebox.showinfo("Unlock", "Completed!")
             self._init_vars_protection()
         except Exception as e:
             messagebox.showerror("Unlock", e)
-            pb.stop()
-            return
 
-class Progressbar(ttk.Frame):
-
-    def __init__(self, parent: Any, title: str, text: str) -> None:
-        root = self.root = tk.Toplevel(parent)
-        super().__init__(root)
-        self.title = title
-        self.text = text
-
-        self._setup_root()
-        self._create_widget()
-
-    def _setup_root(self) -> None:
-        self.root.title(self.title)
-        self.root.geometry('400x100')
-        self.root.resizable(False, False)
-        self.root.attributes('-topmost', True)
-        self.root.grab_set()
-
-    def _create_widget(self) -> None:
-        ttk.Label(self, text=self.text).place(x=20, y=20)
-        pb = self.pb = ttk.Progressbar(self, mode='indeterminate')
-        pb.place(x=20, y=50, width=360)
-        self.pack(fill=BOTH, expand=True)
-
-    def start(self) -> None:
-        self.pb.start(5)
-
-    def stop(self) -> None:
-        self.pb.stop()
-        try:
-            self.root.destroy()
-        except tk.TclError:
-            pass
+    def _verify(pwd1: str, pwd2: str = None) -> bool:
+        if pwd1 == "":
+            messagebox.showerror(
+                "Invalid input", "Enter a password in first entry box.")
+            return False
+        elif pwd2 is not None and pwd1 != pwd2:
+            messagebox.showerror(
+                "Invalid input",
+                "Enter the same password in the second entry box.")
+            return False
+        return True
 
 
 class SettingsWindow(ttk.Frame):
