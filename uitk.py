@@ -832,8 +832,11 @@ class MergeTab(ttk.Frame):
                 "A pdf file with the same name already exists."
                 "\nAre you sure to overwrite it?"):
                 return
-
-        self.converter.save_as_pdf(self.image_paths, savepath)
+        pb = Progressbar(self, "Convert", "Converting images into pdfs and merging them...")
+        pb.start()
+        Thread(
+            target=lambda: self.converter.save_as_pdf(self.image_paths, savepath)).start()
+        pb.stop()
         messagebox.showinfo("Convert", "Completed!")
         self._init_vars_conversion()
 
@@ -881,12 +884,16 @@ class MergeTab(ttk.Frame):
         if not savepath.endswith(('.pdf', '.PDF')):
             savepath += '.pdf'
 
+        pb = Progressbar(self, "Lock", "Attempting to encrypt...")
+        pb.start()
         try:
-            self.passlock.encrypt(pdfpath, savepath, pwd1)
+            Thread(target=lambda: self.passlock.encrypt(pdfpath, savepath, pwd1)).start()
+            pb.stop()
             messagebox.showinfo("Lock", "Completed!")
             self._init_vars_protection()
         except Exception as e:
             messagebox.showerror("Lock", e)
+            pb.stop()
 
     def _unlock(self) -> None:
         pdfpath = self.pdf_path
@@ -899,13 +906,51 @@ class MergeTab(ttk.Frame):
                 "Invalid input", "Enter a password in first entry box.")
             return
 
+        pb = Progressbar(self, "Unlock", "Attempting to decrypt...")
+        pb.start()
         try:
-            self.passlock.decrypt(pdfpath, pdfpath, pwd1)
+            Thread(target=lambda: self.passlock.decrypt(pdfpath, pdfpath, pwd1)).start()
+            pb.stop()
             messagebox.showinfo("Unlock", "Completed!")
             self._init_vars_protection()
         except Exception as e:
             messagebox.showerror("Unlock", e)
+            pb.stop()
             return
+
+class Progressbar(ttk.Frame):
+
+    def __init__(self, parent: Any, title: str, text: str) -> None:
+        root = self.root = tk.Toplevel(parent)
+        super().__init__(root)
+        self.title = title
+        self.text = text
+
+        self._setup_root()
+        self._create_widget()
+
+    def _setup_root(self) -> None:
+        self.root.title(self.title)
+        self.root.geometry('400x100')
+        self.root.resizable(False, False)
+        self.root.attributes('-topmost', True)
+        self.root.grab_set()
+
+    def _create_widget(self) -> None:
+        ttk.Label(self, text=self.text).place(x=20, y=20)
+        pb = self.pb = ttk.Progressbar(self, mode='indeterminate')
+        pb.place(x=20, y=50, width=360)
+        self.pack(fill=BOTH, expand=True)
+
+    def start(self) -> None:
+        self.pb.start(5)
+
+    def stop(self) -> None:
+        self.pb.stop()
+        try:
+            self.root.destroy()
+        except tk.TclError:
+            pass
 
 
 class SettingsWindow(ttk.Frame):
@@ -966,7 +1011,8 @@ class SettingsWindow(ttk.Frame):
         ttk.Spinbox(
             self, textvariable=self.var_auto_clip_interval,
             from_=0.5, to=10, increment=0.1).place(x=320, y=300, width=120)
-        ttk.Label(self, text="Compress before pdf conversion").place(x=20, y=340)
+        ttk.Label(
+            self, text="Compress before pdf conversion").place(x=20, y=340)
         ttk.Checkbutton(
             self, variable=self.var_compress_before_pdf_conversion,
             command=self._on_enable_comp).place(x=375, y=345)
@@ -1001,7 +1047,8 @@ class SettingsWindow(ttk.Frame):
         self.var_pixel_difference_threshold.set(env.pixel_difference_threshold)
         self.var_delete_duplicate_images.set(env.delete_duplicate_images)
         self.var_auto_clip_interval.set(env.auto_clip_interval)
-        self.var_compress_before_pdf_conversion.set(env.compress_before_pdf_conversion)
+        self.var_compress_before_pdf_conversion.set(
+            env.compress_before_pdf_conversion)
         self.var_compression_ratio.set(env.compression_ratio)
         self.var_zip_converted_images.set(env.zip_converted_images)
         self.var_password_security_level.set(env.password_security_level)
