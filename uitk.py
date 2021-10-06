@@ -72,7 +72,7 @@ class Application(ttk.Frame):
 
     def _setup_root(self) -> None:
         self.root.iconbitmap(ICONFILE)
-        self.root.title("Captol dev")
+        self.root.title("Captol v1.0")
         self.root.attributes('-topmost', True)
         self.root.geometry("460x530-0+0")
         self.root.resizable(False, False)
@@ -173,7 +173,7 @@ class ExtractTab(ttk.Frame):
             command=self._on_folder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             frame1, textvariable=self.var_folder,
-            state='readonly').place(x=80, y=50, width=345)
+            state='readonly').place(x=80, y=50, width=345, height=37)
         ttk.Label(frame1, text="Past images:").place(x=30, y=100)
         ttk.Label(
             frame1, textvariable=self.var_nimages_total,
@@ -493,7 +493,9 @@ class EditDialog(ttk.Frame):
 
     def _create_widgets(self) -> None:
         ttk.Label(self, text="Area name: ").place(x=10, y=20)
-        ttk.Entry(self, textvariable=self.name).place(x=130, y=20, width=320)
+        ttk.Entry(
+            self,
+            textvariable=self.name).place(x=130, y=20, width=320, height=37)
         ttk.LabelFrame(self, text="Area").place(
             x=10, y=60, width=440, height=130)
         ttk.Button(
@@ -759,11 +761,11 @@ class MergeTab(ttk.Frame):
             command=self._on_imagefolder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             self, textvariable=self.var_imagename_from,
-            state='readonly').place(x=80, y=50, width=160)
+            state='readonly').place(x=80, y=50, width=160, height=37)
         ttk.Label(self, text="–").place(x=246, y=52)
         ttk.Entry(
             self, textvariable=self.var_imagename_to,
-            state='readonly').place(x=267, y=50, width=160)
+            state='readonly').place(x=267, y=50, width=160, height=37)
         ttk.Label(self, text="Total images:").place(x=30, y=100)
         ttk.Label(
             self, textvariable=self.var_nimages_total,
@@ -779,14 +781,14 @@ class MergeTab(ttk.Frame):
             command=self._on_pdffolder_clicked).place(x=30, y=260, width=45)
         ttk.Entry(
             self, textvariable=self.var_pdfpath,
-            state='readonly').place(x=80, y=260, width=345)
+            state='readonly').place(x=80, y=260, width=345, height=37)
         ttk.Label(self, text="Password:").place(x=30, y=320)
         ent_pwd1 = self.ent_pwd1 = ttk.Entry(self, textvariable=self.var_pwd1)
-        ent_pwd1.place(x=145, y=315, width=280)
+        ent_pwd1.place(x=145, y=315, width=280, height=37)
         ttk.Label(self, text="Again:").place(x=30, y=370)
         ent_pwd2 = self.ent_pwd2 = ttk.Entry(
             self, show="●", textvariable=self.var_pwd2)
-        ent_pwd2.place(x=145, y=365, width=280)
+        ent_pwd2.place(x=145, y=365, width=280, height=37)
         btn_lock = self.btn_lock = ttk.Button(self)
         btn_lock.place(x=150, y=435, width=160)
         self.pack(fill=BOTH, expand=True)
@@ -940,16 +942,17 @@ class SettingsWindow(ttk.Frame):
             self, textvariable=self.var_theme, values=[
                 'cosmo', 'flatly', 'journal', 'literal', 'lumen', 'minty',
                 'pulse', 'sandstone', 'united', 'yeti', 'cyborg', 'darkly',
-                'solar', 'superhero'])
+                'solar', 'superhero', 'alt', 'clam', 'classic', 'default',
+                'vista', 'winnative', 'xpnative'])
         cbb_theme.place(x=320, y=20, width=120)
         ttk.Label(self, text="Area file").place(x=20, y=60)
         ttk.Entry(
-            self,
-            textvariable=self.var_area_file).place(x=20, y=90, width=420)
+            self, textvariable=self.var_area_file).place(
+                x=20, y=90, width=420, height=37)
         ttk.Label(self, text="Default save folder").place(x=20, y=140)
         ttk.Entry(
             self, textvariable=self.var_default_save_folder).place(
-                x=20, y=170, width=420)
+                x=20, y=170, width=420, height=37)
         ttk.Label(self, text="Pixel difference threshold").place(x=20, y=220)
         ttk.Spinbox(
             self, textvariable=self.var_pixel_difference_threshold,
