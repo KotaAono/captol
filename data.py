@@ -82,7 +82,7 @@ class Environment:
     area_file: str = "./areas.json"
     default_save_folder: str = "C:/Users/hnlPublic/Desktop"
     pixel_difference_threshold: int = 10000
-    delete_duplicate_images: bool = True
+    image_duplication_check_steps: int = 1
     auto_clip_interval: float = 1.0
     compress_before_pdf_conversion: bool = True
     compression_ratio: int = 85
