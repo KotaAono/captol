@@ -430,21 +430,18 @@ class ClipFrame(ttk.Frame):
         image = self.clipper.clip()
         self.imbuffer.hold(image)
 
-        if self.imbuffer.compare_similarity(past_step=1):
-            self.imbuffer.release()
-        elif self.env.delete_duplicate_images and \
-            self.imbuffer.compare_similarity(past_step=2):
-            self.imbuffer.delete(past_step=2)
-            self.imbuffer.delete(past_step=1)
-            name = self.counter.next_savepath()
-            self.imbuffer.save(name)
-            self.xparentwindow.flash()
-            self.counter.down(1)
-        else:
-            name = self.counter.next_savepath()
-            self.imbuffer.save(name)
-            self.xparentwindow.flash()
-            self.counter.up(1)
+        for i in range(self.env.image_duplication_check_steps):
+            if self.imbuffer.compare_similarity(past_step=i+1):
+                for j in range(i):
+                    self.imbuffer.delete(past_step=j+1)
+                self.counter.down(i+1)
+                self.imbuffer.release()
+                return
+
+        name = self.counter.next_savepath()
+        self.imbuffer.save(name)
+        self.xparentwindow.flash()
+        self.counter.up(1)
 
 
 class EditDialog(ttk.Frame):
@@ -917,7 +914,7 @@ class SettingsWindow(ttk.Frame):
         self.var_area_file = tk.StringVar()
         self.var_default_save_folder = tk.StringVar()
         self.var_pixel_difference_threshold = tk.IntVar()
-        self.var_delete_duplicate_images = tk.BooleanVar()
+        self.var_image_duplication_check_steps = tk.IntVar()
         self.var_auto_clip_interval = tk.IntVar()
         self.var_compress_before_pdf_conversion = tk.BooleanVar()
         self.var_compression_ratio = tk.IntVar()
@@ -957,10 +954,11 @@ class SettingsWindow(ttk.Frame):
         ttk.Spinbox(
             self, textvariable=self.var_pixel_difference_threshold,
             from_=0, to=999999, increment=1000).place(x=320, y=220, width=120)
-        ttk.Label(self, text="Delete duplicate images").place(x=20, y=260)
-        ttk.Checkbutton(
-            self,
-            variable=self.var_delete_duplicate_images).place(x=375, y=265)
+        ttk.Label(
+            self, text="Image duplication check steps").place(x=20, y=260)
+        ttk.Spinbox(
+            self, textvariable=self.var_image_duplication_check_steps,
+            from_=0, to=5, increment=1).place(x=320, y=260, width=120)
         ttk.Label(self, text="Auto clip interval").place(x=20, y=300)
         ttk.Spinbox(
             self, textvariable=self.var_auto_clip_interval,
@@ -999,7 +997,8 @@ class SettingsWindow(ttk.Frame):
         self.var_area_file.set(env.area_file)
         self.var_default_save_folder.set(env.default_save_folder)
         self.var_pixel_difference_threshold.set(env.pixel_difference_threshold)
-        self.var_delete_duplicate_images.set(env.delete_duplicate_images)
+        self.var_image_duplication_check_steps.set(
+            env.image_duplication_check_steps)
         self.var_auto_clip_interval.set(env.auto_clip_interval)
         self.var_compress_before_pdf_conversion.set(
             env.compress_before_pdf_conversion)
@@ -1020,8 +1019,8 @@ class SettingsWindow(ttk.Frame):
         env.default_save_folder = self.var_default_save_folder.get()
         env.pixel_difference_threshold = \
             self.var_pixel_difference_threshold.get()
-        env.delete_duplicate_images = \
-            self.var_delete_duplicate_images.get()
+        env.image_duplication_check_steps = \
+            self.var_image_duplication_check_steps.get()
         env.auto_clip_interval = self.var_auto_clip_interval.get()
         env.compress_before_pdf_conversion = \
             self.var_compress_before_pdf_conversion.get()
