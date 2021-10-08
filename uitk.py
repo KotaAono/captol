@@ -417,31 +417,34 @@ class ClipFrame(ttk.Frame):
             self.thread = None
 
     def _normal_save(self) -> None:
-        self.xparentwindow.hide_all()
-        image = self.clipper.clip()
-        self.imbuffer.hold(image)
-        name = self.counter.next_savepath()
-        self.imbuffer.save(name)
-        self.xparentwindow.flash()
-        self.counter.up(1)
+        self._extract()
+        self._store()
 
     def _noduplicate_save(self) -> None:
+        self._extract()
+        for i in range(self.env.image_duplication_check_steps):
+            self._delete_duplication(i+1)
+        self._store()
+
+    def _extract(self) -> None:
         self.xparentwindow.hide_all()
         image = self.clipper.clip()
         self.imbuffer.hold(image)
 
-        for i in range(self.env.image_duplication_check_steps):
-            if self.imbuffer.compare_similarity(past_step=i+1):
-                for j in range(i):
-                    self.imbuffer.delete(past_step=j+1)
-                self.counter.down(i+1)
-                self.imbuffer.release()
-                return
-
+    def _store(self) -> None:
         name = self.counter.next_savepath()
         self.imbuffer.save(name)
         self.xparentwindow.flash()
         self.counter.up(1)
+
+    def _delete_duplication(self, past_step: int) -> None:
+        if self.imbuffer.compare_similarity(past_step):
+            self.imbuffer.rehold(past_step)
+            for _ in range(past_step-1):
+                self.imbuffer.delete(1)
+            self.counter.down(past_step-1)
+            self.imbuffer.release()
+            return
 
 
 class EditDialog(ttk.Frame):
