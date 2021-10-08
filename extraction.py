@@ -86,11 +86,15 @@ class ImageBuffer:
 
     def __init__(self, env: Environment) -> None:
         self.env = env
-        self.q = deque(maxlen=2)
+        self.q = deque(maxlen=env.image_duplication_check_steps)
         self.new = None
 
     def hold(self, image: Image) -> None:
         self.new = PathAssignedImage(image)
+
+    def rehold(self, past_step: int) -> None:
+        idx = -past_step
+        self.new = self.q[idx]
 
     def release(self) -> None:
         self.new = None
