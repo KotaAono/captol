@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL, CENTER, LEFT, RIGHT, TOP, BOTTOM, Y
 from tkinter import ttk
 from tkinter import filedialog, messagebox
-from typing import Any
+from typing import Any, Callable
 
 from ttkbootstrap import Style
 
@@ -43,6 +43,7 @@ def shorten(path: str, maxlen: int) -> str:
     if len(dirlist) > maxlen:
         return '\\'.join(['...', dirlist[-2], dirlist[-1]])
     return path
+
 
 def append_ext(path: str, ext: str) -> str:
     if not path.endswith((ext.lower(), ext.upper())):
@@ -276,8 +277,7 @@ class ExtractTab(ttk.Frame):
         if name != self.prevname:
             self.xparentwindow.hide()
             self.xparentwindow.resize(**asdict(rect))
-            sleep(0.05)
-            self.xparentwindow.preview()
+            self.root.after(20, self.xparentwindow.preview)
             self.prevname = name
         else:
             self.xparentwindow.hide()
@@ -303,13 +303,14 @@ class ClipFrame(ttk.Frame):
             self, root: tk.Tk, parent: ExtractTab, env: Environment,
             clipper: Clipper, counter: ImageCounter) -> None:
         super().__init__(root)
+        self.root = root
         self.parent = parent
         self.env = env
         self.clipper = clipper
         self.counter = counter
         self.thread = None
         self.thread_alive = False
-        self.var_clipmode = tk.IntVar()
+        self.var_clipmode = tk.IntVar()  # 1: manual, 2: auto
         self.var_areaname = tk.StringVar()
         self.imbuffer = ImageBuffer(env)
         self.xparentwindow = TransparentWindow(parent=self)
@@ -395,8 +396,7 @@ class ClipFrame(ttk.Frame):
         if messagebox.askyesno(
             "Autoclip", "Do you want to enable Autoclip?"):
             self.parent.block_widgets()
-            sleep(0.5)  # messageboxをキャプチャしないように
-            self._start_autoclip()
+            self.root.after(500, self._start_autoclip)  # messageboxをキャプチャしないように
         else:
             self.var_clipmode.set(1)
 
@@ -737,8 +737,10 @@ class MergeTab(ttk.Frame):
     def __init__(
         self, root: tk.Tk, parent: Application, env: Environment) -> None:
         super().__init__(root)
+        self.root = root
         self.image_paths = None
         self.pdf_path = None
+        self.thread = None
         self.var_nimages_total = tk.IntVar()
         self.var_imagename_from = tk.StringVar()
         self.var_imagename_to = tk.StringVar()
@@ -751,6 +753,20 @@ class MergeTab(ttk.Frame):
         self._create_widgets()
         self._init_vars_conversion()
         self._init_vars_protection()
+
+    def block_widgets(self) -> None:
+        for widget in self.winfo_children():
+            try:
+                widget['state'] = DISABLED
+            except tk.TclError:
+                pass
+
+    def release_widgets(self) -> None:
+        for widget in self.winfo_children():
+            try:
+                widget['state'] = NORMAL
+            except tk.TclError:
+                pass
 
     def _create_widgets(self) -> None:
         ttk.LabelFrame(
@@ -833,9 +849,16 @@ class MergeTab(ttk.Frame):
             return
         savepath = append_ext(savepath, '.pdf')
 
-        self.converter.save_as_pdf(self.image_paths, savepath)
-        messagebox.showinfo("Convert", "Completed!")
-        self._init_vars_conversion()
+        thread = self.thread = Thread(
+            target=lambda: self.converter.save_as_pdf(
+                self.image_paths, savepath))
+        thread.start()
+        self.block_widgets()
+        self._after_threadend(
+            lambda: [
+                messagebox.showinfo("Convert", "Completed!"),
+                self.release_widgets(),
+                self._init_vars_conversion()])
 
     def _on_pdffolder_clicked(self):
         pdf_path = filedialog.askopenfilename(
@@ -872,11 +895,18 @@ class MergeTab(ttk.Frame):
         savepath = append_ext(savepath, '.pdf')
 
         try:
-            self.passlock.encrypt(pdfpath, savepath, pwd1)
-            messagebox.showinfo("Lock", "Completed!")
-            self._init_vars_protection()
+            thread = self.thread = Thread(
+                target=self.passlock.encrypt(pdfpath, savepath, pwd1))
+            thread.start()
+            self.block_widgets()
+            self._after_threadend(
+                lambda: [
+                    messagebox.showinfo("Lock", "Completed!"),
+                    self.release_widgets(),
+                    self._init_vars_protection()])
         except Exception as e:
             messagebox.showerror("Lock", e)
+            self.release_widgets()
 
     def _unlock(self) -> None:
         pdfpath = self.pdf_path
@@ -887,11 +917,18 @@ class MergeTab(ttk.Frame):
             return
 
         try:
-            self.passlock.decrypt(pdfpath, pdfpath, pwd1)
-            messagebox.showinfo("Unlock", "Completed!")
-            self._init_vars_protection()
+            thread = self.thread = Thread(
+                target=self.passlock.decrypt(pdfpath, pdfpath, pwd1))
+            thread.start()
+            self.block_widgets()
+            self._after_threadend(
+                lambda: [
+                    messagebox.showinfo("Unlock", "Completed!"),
+                    self._after_threadend,
+                    self._init_vars_protection()])
         except Exception as e:
             messagebox.showerror("Unlock", e)
+            self.release_widgets()
 
     def _verify(pwd1: str, pwd2: str = None) -> bool:
         if pwd1 == "":
@@ -904,6 +941,12 @@ class MergeTab(ttk.Frame):
                 "Enter the same password in the second entry box.")
             return False
         return True
+
+    def _after_threadend(self, func: Callable) -> None:
+        if self.thread.is_alive():
+            return self.root.after(
+                100, lambda: self._after_threadend(func))
+        return func()
 
 
 class SettingsWindow(ttk.Frame):
