@@ -6,4 +6,5 @@ testfield/
 *.png
 *.ipynb
 *.lnk
+*.json
 past/
