@@ -82,7 +82,7 @@ class Application(ttk.Frame):
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
         note.root = self
-        note.place(x=0, y=10, relwidth=1, relheight=1)
+        note.place(x=0, y=10, relwidth=1, height=520)
         note.add(ExtractTab(
             note, parent=self, env=self.env), text="1. Extract")
         note.add(MergeTab(
