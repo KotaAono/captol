@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ctypes import windll
 from dataclasses import asdict
-from os.path import basename, splitext, isfile
+from os.path import basename, splitext
 from threading import Thread
 from time import sleep
 import tkinter as tk
@@ -849,16 +849,14 @@ class MergeTab(ttk.Frame):
             return
         savepath = append_ext(savepath, '.pdf')
 
-        thread = self.thread = Thread(
-            target=lambda: self.converter.save_as_pdf(
-                self.image_paths, savepath))
-        thread.start()
         self.block_widgets()
-        self._after_threadend(
-            lambda: [
-                messagebox.showinfo("Convert", "Completed!"),
-                self.release_widgets(),
-                self._init_vars_conversion()])
+        with ProgressWindow(
+            self, "PDF Conversion", "Packing images into a pdf...") as pb:
+            pb.run_try(self.converter.save_as_pdf, self.image_paths, savepath)
+            pb.run_try(messagebox.showinfo, "PDF Convertion", "Completed!")
+            pb.run_try(self._init_vars_conversion)
+            pb.run_exc(messagebox.showerror, "PDF Convertion")
+            pb.run_fin(self.release_widgets)
 
     def _on_pdffolder_clicked(self):
         pdf_path = filedialog.askopenfilename(
@@ -894,19 +892,14 @@ class MergeTab(ttk.Frame):
             return
         savepath = append_ext(savepath, '.pdf')
 
-        try:
-            thread = self.thread = Thread(
-                target=self.passlock.encrypt(pdfpath, savepath, pwd1))
-            thread.start()
-            self.block_widgets()
-            self._after_threadend(
-                lambda: [
-                    messagebox.showinfo("Lock", "Completed!"),
-                    self.release_widgets(),
-                    self._init_vars_protection()])
-        except Exception as e:
-            messagebox.showerror("Lock", e)
-            self.release_widgets()
+        self.block_widgets()
+        with ProgressWindow(
+            self, "Password Protection", "Trying to encrypt...") as pb:
+            pb.run_try(self.passlock.encrypt, pdfpath, savepath, pwd1)
+            pb.run_try(messagebox.showinfo, "Lock", "Completed!")
+            pb.run_try(self._init_vars_protection)
+            pb.run_exc(messagebox.showerror, "Lock")
+            pb.run_fin(self.release_widgets)
 
     def _unlock(self) -> None:
         pdfpath = self.pdf_path
@@ -916,21 +909,16 @@ class MergeTab(ttk.Frame):
         if not self._verify(pwd1):
             return
 
-        try:
-            thread = self.thread = Thread(
-                target=self.passlock.decrypt(pdfpath, pdfpath, pwd1))
-            thread.start()
-            self.block_widgets()
-            self._after_threadend(
-                lambda: [
-                    messagebox.showinfo("Unlock", "Completed!"),
-                    self._after_threadend,
-                    self._init_vars_protection()])
-        except Exception as e:
-            messagebox.showerror("Unlock", e)
-            self.release_widgets()
+        self.block_widgets()
+        with ProgressWindow(
+            self, "Password Protection", "Trying to decrypt...") as pb:
+            pb.run_try(self.passlock.decrypt, pdfpath, pdfpath, pwd1)
+            pb.run_try(messagebox.showinfo, "Unlock", "Completed!")
+            pb.run_try(self._init_vars_protection)
+            pb.run_exc(messagebox.showerror, "Unlock")
+            pb.run_fin(self.release_widgets)
 
-    def _verify(pwd1: str, pwd2: str = None) -> bool:
+    def _verify(self, pwd1: str, pwd2: str = None) -> bool:
         if pwd1 == "":
             messagebox.showerror(
                 "Invalid input", "Enter a password in first entry box.")
@@ -947,6 +935,71 @@ class MergeTab(ttk.Frame):
             return self.root.after(
                 100, lambda: self._after_threadend(func))
         return func()
+
+
+class ProgressWindow(ttk.Frame):
+
+    def __init__(self, parent: Any, title: str, text: str) -> None:
+        root = self.root = tk.Toplevel(parent)
+        super().__init__(root)
+        self.parent = parent
+        self.title = title
+        self.text = text
+        self.try_funcs = list()
+        self.exc_funcs = list()
+        self.fin_funcs = list()
+
+        self._setup_root()
+        self._create_widget()
+
+    def __enter__(self) -> None:
+        return self
+
+    def __exit__(self, *args) -> None:
+        self._run()
+        self._wait_finish()
+
+    def run_try(self, func: Callable, *args: list[Any]) -> None:
+        self.try_funcs.append(lambda: func(*args))
+
+    def run_exc(self, func: Callable, *args: list[Any]) -> None:
+        self.exc_funcs.append(lambda e: func(*args, e))
+
+    def run_fin(self, func: Callable, *args: list[Any]) -> None:
+        self.fin_funcs.append(lambda: func(*args))
+
+    def _setup_root(self) -> None:
+        self.root.title(self.title)
+        self.root.geometry("460x85")
+        self.root.resizable(False, False)
+        self.root.grab_set()
+
+    def _create_widget(self) -> None:
+        ttk.Label(self, text=self.text).place(x=20, y=20)
+        bar = self.bar = ttk.Progressbar(self, mode='indeterminate')
+        bar.place(x=20, y=50, width=420)
+        self.pack(fill=BOTH, expand=True)
+
+    def _run(self) -> None:
+        def _target():
+            try:
+                self.bar.start(5)
+                for func in self.try_funcs:
+                    func()
+            except Exception as e:
+                self.bar.stop()
+                for func in self.exc_funcs:
+                    func(e)
+            finally:
+                self.root.destroy()
+                for func in self.fin_funcs:
+                    func()
+        thread = self.thread = Thread(target=_target)
+        thread.start()
+
+    def _wait_finish(self) -> None:
+        if self.thread.is_alive():
+            return self.root.after(100, self._wait_finish)
 
 
 class SettingsWindow(ttk.Frame):
