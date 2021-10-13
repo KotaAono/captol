@@ -25,7 +25,7 @@ class Clipper:
         area = self.area
         x1, y1 = area.x, area.y
         x2, y2 = x1 + area.w, y1 + area.h
-        image = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+        image = ImageGrab.grab(bbox=(x1, y1, x2, y2), all_screens=True)
         return image
 
 

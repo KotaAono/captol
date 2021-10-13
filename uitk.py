@@ -9,6 +9,7 @@ from tkinter import BOTH, DISABLED, NORMAL, CENTER, LEFT, RIGHT, TOP, BOTTOM, Y
 from tkinter import ttk
 from tkinter import filedialog, messagebox
 from typing import Any, Callable
+from win32api import EnumDisplayMonitors
 
 from ttkbootstrap import Style
 
@@ -20,8 +21,19 @@ from merging import PdfConverter, PassLock
 ICONFILE = 'favicon.ico'
 
 
-def high_resolution() -> None:
+def set_high_resolution() -> None:
     windll.shcore.SetProcessDpiAwareness(True)
+
+
+def get_expanded_screen_info() -> tuple[int]:
+    xmin, ymin, xmax, ymax = 0, 0, 0, 0
+    for winfo in EnumDisplayMonitors():
+        x1, y1, x2, y2 = winfo[-1]
+        xmin = min(x1, xmin)
+        ymin = min(y1, ymin)
+        xmax = max(x2, xmax)
+        ymax = max(y2, ymax)
+    return xmin, ymin, xmax-xmin, ymax-ymin
 
 
 def noext_basename(path: str) -> str:
@@ -564,7 +576,7 @@ class EditDialog(ttk.Frame):
             x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
         except tk.TclError:
             messagebox.showerror(
-                "Editor", "Invalid input. Only numbers are accepted.")
+                "Editor", "Only numbers are acceptable.")
             return
 
         if not self._validate(name, x, y, w, h):
@@ -601,9 +613,9 @@ class EditDialog(ttk.Frame):
         if name == "":
             messagebox.showerror("Invalid Input", "Area name cannot be blank.")
             return False
-        if min(x, y, w, h) < 0:
+        if w < 0 or h < 0:
             messagebox.showerror(
-                "Invalid Input", "Minous value is not allowed.")
+                "Invalid Input", "Width, height must be a positive value.")
             return False
         return True
 
@@ -622,8 +634,10 @@ class Drawer(ttk.Frame):
         self.var_y = var_y
         self.var_w = var_w
         self.var_h = var_h
-        self.start_x = None
-        self.start_y = None
+        self.minx = None
+        self.miny = None
+        self.sx = None
+        self.sy = None
         self.xparentwindow = xparentwindow
 
         self._setup_root()
@@ -632,9 +646,11 @@ class Drawer(ttk.Frame):
 
     def _setup_root(self) -> None:
         self.root.attributes('-alpha', 0.1)
-        self.root.attributes('-fullscreen', True)
+        x, y, w, h = get_expanded_screen_info()
+        self.root.geometry(f'{w}x{h}+{x}+{y}')
         self.root.resizable(False, False)
         self.root.overrideredirect(True)
+        self.minx, self.miny = x, y
 
     def _create_widgets(self) -> None:
         canvas = self.canvas = tk.Canvas(self, bg='cyan', highlightthickness=0)
@@ -645,18 +661,20 @@ class Drawer(ttk.Frame):
         self.pack(fill=BOTH, expand=True)
 
     def _on_drag_start(self, event: Any) -> None:
-        self.start_x = event.x
-        self.start_y = event.y
+        self.sx = self.minx + event.x
+        self.sy = self.miny + event.y
         self.xparentwindow.resize(0, 0, 0, 0)
         self.xparentwindow.preview()
 
     def _on_moving(self, event: Any) -> None:
-        sx, sy, cx, cy = self.start_x, self.start_y, event.x, event.y
+        sx, sy = self.sx, self.sy
+        cx, cy = self.minx + event.x, self.miny + event.y
         x, y, w, h = min(sx, cx), min(sy, cy), abs(sx-cx), abs(sy-cy)
         self.xparentwindow.resize(x, y, w, h)
 
     def _on_drag_end(self, event: Any) -> None:
-        sx, sy, cx, cy = self.start_x, self.start_y, event.x, event.y
+        sx, sy = self.sx, self.sy
+        cx, cy = self.minx + event.x, self.miny + event.y
         self.var_x.set(min(sx, cx))
         self.var_y.set(min(sy, cy))
         self.var_w.set(abs(sx-cx))
@@ -1145,7 +1163,7 @@ class SettingsWindow(ttk.Frame):
 
 if __name__ == '__main__':
     try:
-        high_resolution()
+        set_high_resolution()
     except:
         pass
     root = tk.Tk()
