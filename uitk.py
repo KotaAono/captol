@@ -423,7 +423,13 @@ class ClipFrame(ttk.Frame):
     def _noduplicate_save(self) -> None:
         self._extract()
         for i in range(self.env.image_duplication_check_steps):
-            self._delete_duplication(i+1)
+            if self.imbuffer.compare_similarity(i+1):
+                self.imbuffer.rehold(i+1)
+                for _ in range(i):
+                    self.imbuffer.delete(1)
+                self.counter.down(i)
+                self.imbuffer.release()
+                return
         self._store()
 
     def _extract(self) -> None:
@@ -436,15 +442,6 @@ class ClipFrame(ttk.Frame):
         self.imbuffer.save(name)
         self.xparentwindow.flash()
         self.counter.up(1)
-
-    def _delete_duplication(self, past_step: int) -> None:
-        if self.imbuffer.compare_similarity(past_step):
-            self.imbuffer.rehold(past_step)
-            for _ in range(past_step-1):
-                self.imbuffer.delete(1)
-            self.counter.down(past_step-1)
-            self.imbuffer.release()
-            return
 
 
 class EditDialog(ttk.Frame):
@@ -504,22 +501,22 @@ class EditDialog(ttk.Frame):
                 x=30, y=95, width=90, height=80)
         ttk.Label(self, text="x:").place(x=150, y=95)
         spb_x = ttk.Spinbox(
-            self, textvariable=self.x, from_=0, to=9999,
+            self, textvariable=self.x, from_=-9999, to=9999,
             command=self._on_spb_changed)
         spb_x.place(x=180, y=95, width=80)
         ttk.Label(self, text="width:").place(x=280, y=95)
         spb_w = ttk.Spinbox(
-            self, textvariable=self.w, from_=0, to=9999,
+            self, textvariable=self.w, from_=-9999, to=9999,
             command=self._on_spb_changed)
         spb_w.place(x=350, y=95, width=80)
         ttk.Label(self, text="y:").place(x=150, y=140)
         spb_y = ttk.Spinbox(
-            self, textvariable=self.y, from_=0, to=9999,
+            self, textvariable=self.y, from_=-9999, to=9999,
             command=self._on_spb_changed)
         spb_y.place(x=180, y=140, width=80)
         ttk.Label(self, text="height:").place(x=280, y=140)
         spb_h = ttk.Spinbox(
-            self, textvariable=self.h, from_=0, to=9999,
+            self, textvariable=self.h, from_=-9999, to=9999,
             command=self._on_spb_changed)
         spb_h.place(x=350, y=140, width=80)
         ttk.Button(
@@ -528,14 +525,10 @@ class EditDialog(ttk.Frame):
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
             style='secondary.Outline.TButton').place(x=260, y=200, width=160)
-        spb_x.bind('<Return>', self._on_spb_changed)
-        spb_w.bind('<Return>', self._on_spb_changed)
-        spb_y.bind('<Return>', self._on_spb_changed)
-        spb_h.bind('<Return>', self._on_spb_changed)
-        spb_x.bind('<Button-1>', self._on_spb_changed)
-        spb_w.bind('<Button-1>', self._on_spb_changed)
-        spb_y.bind('<Button-1>', self._on_spb_changed)
-        spb_h.bind('<Button-1>', self._on_spb_changed)
+        spb_x.bind('<KeyRelease>', self._on_spb_changed)
+        spb_w.bind('<KeyRelease>', self._on_spb_changed)
+        spb_y.bind('<KeyRelease>', self._on_spb_changed)
+        spb_h.bind('<KeyRelease>', self._on_spb_changed)
         self.pack(fill=BOTH, expand=True)
 
     def _init_vars(self) -> None:
@@ -559,12 +552,21 @@ class EditDialog(ttk.Frame):
         self.xparentwindow.hide()
 
     def _on_spb_changed(self, event: Any = None) -> None:
-        x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
+        try:
+            x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
+        except tk.TclError:  # deleteで全部消すとget()で "" (str)が返る．
+            return
         self.xparentwindow.resize(x, y, w, h)
 
     def _on_ok(self) -> None:
         name = self.name.get()
-        x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
+        try:
+            x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
+        except tk.TclError:
+            messagebox.showerror(
+                "Editor", "Invalid input. Only numbers are accepted.")
+            return
+
         if not self._validate(name, x, y, w, h):
             return
 
