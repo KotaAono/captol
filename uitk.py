@@ -160,7 +160,10 @@ class ExtractTab(ttk.Frame):
     def release_widgets(self) -> None:
         for widget in self.frame1.winfo_children():
             try:
-                widget['state'] = NORMAL
+                if widget.winfo_name() == '!entry':
+                    widget['state'] = 'readonly'
+                else:
+                    widget['state'] = NORMAL
             except tk.TclError:
                 pass
 
@@ -392,11 +395,13 @@ class ClipFrame(ttk.Frame):
         self.parent.shrink()
         self.fold_button['text'] = "▼"
         self.fold_button['command'] = self._on_unfold_clicked
+        self.parent.parent.note.place_configure(height=100)
 
     def _on_unfold_clicked(self) -> None:
         self.parent.extend()
         self.fold_button['text'] = "▲"
         self.fold_button['command'] = self._on_fold_clicked
+        self.parent.parent.note.place_configure(height=520)
 
     def _on_manual_clicked(self) -> None:
         if self.thread_alive:
@@ -784,7 +789,10 @@ class MergeTab(ttk.Frame):
     def release_widgets(self) -> None:
         for widget in self.winfo_children():
             try:
-                widget['state'] = NORMAL
+                if widget.winfo_name() in ('!entry', '!entry2', '!entry3'):
+                    widget['state'] = 'readonly'
+                else:
+                    widget['state'] = NORMAL
             except tk.TclError:
                 pass
 
@@ -840,8 +848,6 @@ class MergeTab(ttk.Frame):
         self.var_pwd1.set("")
         self.var_pwd2.set("")
         self.ent_pwd1['show'] = "●"
-        self.ent_pwd1['state'] = DISABLED
-        self.ent_pwd2['state'] = DISABLED
         self.btn_lock['text'] = "Lock/Unlock"
         self.btn_lock['command'] = lambda: None
         self.pdf_path = None
@@ -887,15 +893,14 @@ class MergeTab(ttk.Frame):
         self._init_vars_protection()
         self.pdf_path = pdf_path
         self.var_pdfpath.set(shorten(pdf_path, maxlen=2))
-        self.ent_pwd1['state'] = NORMAL
         if self.passlock.check_encryption(pdf_path):
             self.ent_pwd1['show'] = ""
-            self.ent_pwd2['state'] = DISABLED
+            self.ent_pwd2.place_forget()
             self.btn_lock['text'] = "Unlock"
             self.btn_lock['command'] = self._unlock
         else:
             self.ent_pwd1['show'] = "●"
-            self.ent_pwd2['state'] = NORMAL
+            self.ent_pwd2.place(x=145, y=365, width=280, height=37)
             self.btn_lock['text'] = "Lock"
             self.btn_lock['command'] = self._lock
 
