@@ -130,6 +130,9 @@ class ImageBuffer:
         target = self.q[idx]
         new = self.new
 
+        if new.size != target.size:
+            return False
+
         pix = self._calculate_different_pixels(new.gray, target.gray)
         if pix > self.env.pixel_difference_threshold:
             return False
@@ -148,7 +151,9 @@ class PathAssignedImage:
     color: Image
     path: str = None
     gray: Image = None
+    size: tuple[int] = None
 
     def __post_init__(self) -> None:
         imarr = np.array(self.color)
         self.gray = cv2.cvtColor(imarr, 0)
+        self.size = imarr.shape
