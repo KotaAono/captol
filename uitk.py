@@ -116,7 +116,8 @@ class Application(ttk.Frame):
 class ExtractTab(ttk.Frame):
 
     def __init__(
-            self, root: tk.Tk, parent: Application, env: Environment) -> None:
+            self, root: ttk.Notebook, parent: Application,
+            env: Environment) -> None:
         super().__init__(root)
         self.root = root
         self.parent = parent
@@ -235,7 +236,7 @@ class ExtractTab(ttk.Frame):
             return
         self._reset_folder_info(folder)
 
-    def _on_area_selected(self, event: Any) -> None:
+    def _on_area_selected(self, event: tk.Event) -> None:
         name = self._get_one_lbselection()
         if name is None:
             return  # EditのSpinboxを変えるとname=Noneで呼び出されるため
@@ -285,7 +286,7 @@ class ExtractTab(ttk.Frame):
         self.counter.set_dir(folder)
         self.counter.initialize_count()
 
-    def _reset_clip_areas(self, keys: list) -> None:
+    def _reset_clip_areas(self, keys: list[str]) -> None:
         self.var_listitems.set(keys)
 
     def _switch_preview(self, name: str, rect: Rectangle) -> None:
@@ -315,7 +316,7 @@ class ExtractTab(ttk.Frame):
 class ClipFrame(ttk.Frame):
 
     def __init__(
-            self, root: tk.Tk, parent: ExtractTab, env: Environment,
+            self, root: ttk.Frame, parent: ExtractTab, env: Environment,
             clipper: Clipper, counter: ImageCounter) -> None:
         super().__init__(root)
         self.root = root
@@ -568,7 +569,7 @@ class EditDialog(ttk.Frame):
         Drawer(self, self.xparentwindow, self.x, self.y, self.w, self.h)
         self.xparentwindow.hide()
 
-    def _on_spb_changed(self, event: Any = None) -> None:
+    def _on_spb_changed(self, event: tk.Event = None) -> None:
         try:
             x, y, w, h = self.x.get(), self.y.get(), self.w.get(), self.h.get()
         except tk.TclError:  # deleteで全部消すとget()で "" (str)が返る．
@@ -665,19 +666,19 @@ class Drawer(ttk.Frame):
         canvas.bind('<ButtonRelease>', self._on_drag_end)
         self.pack(fill=BOTH, expand=True)
 
-    def _on_drag_start(self, event: Any) -> None:
+    def _on_drag_start(self, event: tk.Event) -> None:
         self.sx = self.minx + event.x
         self.sy = self.miny + event.y
         self.xparentwindow.resize(0, 0, 0, 0)
         self.xparentwindow.preview()
 
-    def _on_moving(self, event: Any) -> None:
+    def _on_moving(self, event: tk.Event) -> None:
         sx, sy = self.sx, self.sy
         cx, cy = self.minx + event.x, self.miny + event.y
         x, y, w, h = min(sx, cx), min(sy, cy), abs(sx-cx), abs(sy-cy)
         self.xparentwindow.resize(x, y, w, h)
 
-    def _on_drag_end(self, event: Any) -> None:
+    def _on_drag_end(self, event: tk.Event) -> None:
         sx, sy = self.sx, self.sy
         cx, cy = self.minx + event.x, self.miny + event.y
         self.var_x.set(min(sx, cx))
@@ -689,14 +690,15 @@ class Drawer(ttk.Frame):
 
 
 class TransparentWindow(tk.Frame):
-    roots: list[tk.Tk] = list()
+    roots: list[tk.Toplevel] = list()
 
-    def __init__(self, parent: Any) -> None:
+    def __init__(self, parent: ExtractTab | ClipFrame | EditDialog) -> None:
         root = self.root = tk.Toplevel(parent)
         super().__init__(root, bg='white')
         self.parent = parent
         self.markframe = None
         self.prev_name = None
+
         self._setup_root()
         self._create_widgets()
         self.hide()
@@ -765,7 +767,6 @@ class MergeTab(ttk.Frame):
         self.root = root
         self.image_paths = None
         self.pdf_path = None
-        self.thread = None
         self.var_nimages_total = tk.IntVar()
         self.var_imagename_from = tk.StringVar()
         self.var_imagename_to = tk.StringVar()
@@ -884,7 +885,7 @@ class MergeTab(ttk.Frame):
             pb.run_exc(messagebox.showerror, "PDF Convertion")
             pb.run_fin(self.release_widgets)
 
-    def _on_pdffolder_clicked(self):
+    def _on_pdffolder_clicked(self) -> None:
         pdf_path = filedialog.askopenfilename(
             title="Select PDF", filetypes=[('pdf', '*.pdf')])
         if not pdf_path:
@@ -955,16 +956,10 @@ class MergeTab(ttk.Frame):
             return False
         return True
 
-    def _after_threadend(self, func: Callable) -> None:
-        if self.thread.is_alive():
-            return self.root.after(
-                100, lambda: self._after_threadend(func))
-        return func()
-
 
 class ProgressWindow(ttk.Frame):
 
-    def __init__(self, parent: Any, title: str, text: str) -> None:
+    def __init__(self, parent: MergeTab, title: str, text: str) -> None:
         root = self.root = tk.Toplevel(parent)
         super().__init__(root)
         self.parent = parent
@@ -977,20 +972,20 @@ class ProgressWindow(ttk.Frame):
         self._setup_root()
         self._create_widget()
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> ProgressWindow:
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args: Any) -> None:
         self._run()
         self._wait_finish()
 
-    def run_try(self, func: Callable, *args: list[Any]) -> None:
+    def run_try(self, func: Callable, *args: Any) -> None:
         self.try_funcs.append(lambda: func(*args))
 
-    def run_exc(self, func: Callable, *args: list[Any]) -> None:
+    def run_exc(self, func: Callable, *args: Any) -> None:
         self.exc_funcs.append(lambda e: func(*args, e))
 
-    def run_fin(self, func: Callable, *args: list[Any]) -> None:
+    def run_fin(self, func: Callable, *args: Any) -> None:
         self.fin_funcs.append(lambda: func(*args))
 
     def _setup_root(self) -> None:
@@ -1167,10 +1162,7 @@ class SettingsWindow(ttk.Frame):
 
 
 if __name__ == '__main__':
-    try:
-        set_high_resolution()
-    except:
-        pass
+    set_high_resolution()
     root = tk.Tk()
     Application(root)
     root.mainloop()
