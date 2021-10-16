@@ -1,5 +1,7 @@
 __pycache__
 testfield/
+backend/
+build/
 *.bat
 *.vbs
 *.pptx
