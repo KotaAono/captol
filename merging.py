@@ -1,12 +1,10 @@
 from __future__ import annotations
 import io
 import os
-from posixpath import basename
 import subprocess
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
-from tqdm import tqdm
 from data import Environment
 import img2pdf
 
@@ -31,7 +29,7 @@ class PdfConverter:
         do_compress = self.env.compress_before_pdf_conversion
         quality = self.env.compression_ratio
         images = list()
-        for path in tqdm(image_paths, desc="Collecting images"):
+        for path in image_paths:
             try:
                 image = Image.open(path)
                 if do_compress:
@@ -68,14 +66,15 @@ class PdfConverter:
                 pass
 
         with ZipFile(output_path, 'a') as zf:
-            for path in tqdm(image_paths, desc="Exporting to zip"):
+            for path in image_paths:
                 try:
-                    zf.write(path, basename(path), compress_type=ZIP_DEFLATED)
+                    zf.write(
+                        path, os.path.basename(path), compress_type=ZIP_DEFLATED)
                 except FileNotFoundError:
                     pass
 
     def _remove_packed_images(self, image_paths: list[str]) -> None:
-        for path in tqdm(image_paths, "Removing images"):
+        for path in image_paths:
             try:
                 os.remove(path)
             except FileNotFoundError:
