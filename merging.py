@@ -90,29 +90,31 @@ class PassLock:
     def encrypt(self, pdfpath: str, savepath: str, pw: str):
         lv = self._key_length()
         if pdfpath != savepath:
-            command = f'qpdf --encrypt {pw} {pw} {lv} -- "{pdfpath}" "{savepath}"'
+            self._run(
+                f'qpdf --encrypt {pw} {pw} {lv} -- "{pdfpath}" "{savepath}"')
         else:
-            command = f'qpdf --encrypt {pw} {pw} {lv} -- --replace-input "{pdfpath}"'
-        output = subprocess.run(command, capture_output=True)
-        if output.returncode == 2:
-            raise Exception(output.stderr.decode())
+            self._run(
+                f'qpdf --encrypt {pw} {pw} {lv} -- --replace-input "{pdfpath}"')
 
     def decrypt(self, pdfpath: str, savepath: str, pw: str):
         if pdfpath != savepath:
-            command = f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"'
+            self._run(
+                f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"')
         else:
-            command = f'qpdf --password={pw} --decrypt --replace-input "{pdfpath}"'
+            self._run(
+                f'qpdf --password={pw} --decrypt --replace-input "{pdfpath}"')
+
+    def check_encryption(self, pdfpath: str) -> bool:
+        try:
+            self._run(f'qpdf --is-encrypted "{pdfpath}"')
+            return True
+        except Exception:
+            return False
+
+    def _run(command: str) -> None:
         output = subprocess.run(command, capture_output=True)
         if output.returncode == 2:
             raise Exception(output.stderr.decode())
-
-    def check_encryption(self, pdfpath: str) -> bool:
-        returncode = subprocess.run(
-            f'qpdf --is-encrypted "{pdfpath}"').returncode
-        if returncode == 0:
-            return True
-        elif returncode == 2:
-            return False
 
     def _key_length(self) -> str:
         lv = self.env.password_security_level
