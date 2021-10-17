@@ -58,13 +58,15 @@ class ImageCounter:
     def down(self, value: int) -> None:
         self.var_today.set(self.var_today.get() - value)
 
-    def initialize_count(self) -> int:
+    def initialize_count(self) -> None:
         date_pattern = re.compile('(\d{4})-(\d{2})-(\d{2})_(\d+)\.')
         today_pattern = re.compile(f'{self.date}_(\d+)\.')
         num_pattern = re.compile('_(\d+)\.')
         dirimages = pathlib.Path(self.basedir).glob(f'*.{self.ext}')
         matchnames = [p.name for p in dirimages if date_pattern.match(p.name)]
-        todaynums = [int(num_pattern.findall(p)[0]) for p in matchnames if today_pattern.match(p)]
+        todaynums = [
+            int(num_pattern.findall(p)[0]) for p in matchnames
+            if today_pattern.match(p)]
 
         n_today = len(todaynums)
         n_past = len(matchnames) - n_today
@@ -138,7 +140,8 @@ class ImageBuffer:
             return False
         return True
 
-    def _calculate_different_pixels(self, gray_image1: Image, gray_image2: Image) -> float:
+    def _calculate_different_pixels(
+        self, gray_image1: Image, gray_image2: Image) -> float:
         dif = cv2.absdiff(gray_image1, gray_image2)
         blr = cv2.GaussianBlur(dif, (15, 15), 5)
         thr = cv2.threshold(blr, 50, 255, cv2.THRESH_BINARY)[1]

@@ -87,7 +87,7 @@ class Environment:
     compress_before_pdf_conversion: bool = True
     compression_ratio: int = 85
     zip_converted_images: bool = True
-    password_security_level: int = 3
+    password_security_level: Literal[1, 2, 3] = 3
 
     def __post_init__(self) -> None:
         self.load()

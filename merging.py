@@ -3,7 +3,6 @@ import io
 import os
 from posixpath import basename
 import subprocess
-from typing import Any
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from PIL import Image
@@ -23,11 +22,12 @@ class PdfConverter:
 
         zip_dir = os.path.join(savedir, 'archives')
         pdf = self._fetch_images_as_pdf(image_paths)
+        print(type(pdf))
         self._dump_in_pdf(pdf, savedir, savename_noext)
         if self.env.zip_converted_images:
             self._pack_usedimages_into_zip(image_paths, zip_dir, savename_noext)
 
-    def _fetch_images_as_pdf(self, image_paths: list[str]) -> Any:
+    def _fetch_images_as_pdf(self, image_paths: list[str]) -> bytes:
         do_compress = self.env.compress_before_pdf_conversion
         quality = self.env.compression_ratio
         images = list()
@@ -47,12 +47,13 @@ class PdfConverter:
         image.save(buffer, format="JPEG", quality=quality)
         return buffer.getvalue()
 
-    def _dump_in_pdf(self, pdf: Any, output_dir: str, basename: str) -> None:
+    def _dump_in_pdf(self, pdf: bytes, output_dir: str, basename: str) -> None:
         output_path = os.path.join(output_dir, basename+'.pdf')
         with open(output_path, 'ab') as f:
             f.write(pdf)
 
-    def _pack_usedimages_into_zip(self, image_paths: list[str], output_dir: str, basename: str) -> None:
+    def _pack_usedimages_into_zip(
+        self, image_paths: list[str], output_dir: str, basename: str) -> None:
         output_path = os.path.join(output_dir, basename+'.zip')
         os.makedirs(output_dir, exist_ok=True)
 
