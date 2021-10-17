@@ -84,7 +84,10 @@ class Application(ttk.Frame):
         self.note.tab(1, state=DISABLED)
 
     def _setup_root(self) -> None:
-        self.root.iconbitmap(ICONFILE)
+        try:
+            self.root.iconbitmap(ICONFILE)
+        except FileNotFoundError:
+            pass
         self.root.title("Captol v1.0")
         self.root.attributes('-topmost', True)
         self.root.geometry("460x530-0+0")
@@ -498,7 +501,10 @@ class EditDialog(ttk.Frame):
                 pass
 
     def _setup_root(self) -> None:
-        self.root.iconbitmap(ICONFILE)
+        try:
+            self.root.iconbitmap(ICONFILE)
+        except FileNotFoundError:
+            pass
         self.root.title("Edit")
         self.root.geometry("460x250")
         self.root.resizable(False, False)
@@ -1045,7 +1051,10 @@ class SettingsWindow(ttk.Frame):
         self._create_widgets()
 
     def _setup_root(self) -> None:
-        self.root.iconbitmap(ICONFILE)
+        try:
+            self.root.iconbitmap(ICONFILE)
+        except FileNotFoundError:
+            pass
         self.root.title("Environment Settings")
         self.root.geometry('460x560')
         self.root.resizable(False, False)
