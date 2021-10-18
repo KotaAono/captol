@@ -110,7 +110,7 @@ class PassLock:
         except Exception:
             return False
 
-    def _run(command: str) -> None:
+    def _run(self, command: str) -> None:
         output = subprocess.run(command, capture_output=True)
         if output.returncode == 2:
             raise Exception(output.stderr.decode())
