@@ -1,7 +1,8 @@
 __pycache__
 testfield/
-backend/
+past/
 build/
+mkl/
 *.bat
 *.vbs
 *.pptx
@@ -9,4 +10,3 @@ build/
 *.ipynb
 *.lnk
 *.json
-past/
