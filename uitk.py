@@ -1040,7 +1040,7 @@ class SettingsWindow(ttk.Frame):
         self.var_default_save_folder = tk.StringVar()
         self.var_pixel_difference_threshold = tk.IntVar()
         self.var_image_duplication_check_steps = tk.IntVar()
-        self.var_auto_clip_interval = tk.IntVar()
+        self.var_auto_clip_interval = tk.DoubleVar()
         self.var_compress_before_pdf_conversion = tk.BooleanVar()
         self.var_compression_ratio = tk.IntVar()
         self.var_zip_converted_images = tk.BooleanVar()
