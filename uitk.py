@@ -1043,6 +1043,8 @@ class SettingsWindow(ttk.Frame):
         self.var_auto_clip_interval = tk.DoubleVar()
         self.var_compress_before_pdf_conversion = tk.BooleanVar()
         self.var_compression_ratio = tk.IntVar()
+        self.var_resize_before_pdf_conversion = tk.BooleanVar()
+        self.var_resized_height = tk.IntVar()
         self.var_zip_converted_images = tk.BooleanVar()
         self.var_password_security_level = tk.IntVar()
 
@@ -1056,7 +1058,7 @@ class SettingsWindow(ttk.Frame):
         except FileNotFoundError:
             pass
         self.root.title("Environment Settings")
-        self.root.geometry('460x560')
+        self.root.geometry('460x640')
         self.root.resizable(False, False)
         self.root.attributes('-topmost', True)
         self.root.protocol('WM_DELETE_WINDOW', self._on_cancel)
@@ -1096,28 +1098,38 @@ class SettingsWindow(ttk.Frame):
         ttk.Checkbutton(
             self, variable=self.var_compress_before_pdf_conversion,
             command=self._on_enable_comp).place(x=375, y=345)
-        ttk.Label(self, text="Compression ratio").place(x=20, y=380)
+        ttk.Label(self, text="    - Compression ratio").place(x=20, y=380)
         spb_ratio = self.spb_ratio = ttk.Spinbox(
             self, textvariable=self.var_compression_ratio, from_=60, to=90)
         spb_ratio.place(x=320, y=380, width=120)
-        ttk.Label(self, text="Zip converted images").place(x=20, y=420)
+        ttk.Label(self, text="Resize before pdf conversion").place(x=20, y=420)
         ttk.Checkbutton(
-            self, variable=self.var_zip_converted_images).place(x=375, y=425)
-        ttk.Label(self, text="Password security level").place(x=20, y=460)
+            self, variable=self.var_resize_before_pdf_conversion,
+            command=self._on_enable_resize).place(x=375, y=425)
+        ttk.Label(self, text="    - Resized height").place(x=20, y=460)
+        spb_height = self.spb_height = ttk.Spinbox(
+            self, textvariable=self.var_resized_height, from_=10, to=9999)
+        spb_height.place(x=320, y=460, width=120)
+        ttk.Label(self, text="Zip converted images").place(x=20, y=500)
+        ttk.Checkbutton(
+            self, variable=self.var_zip_converted_images).place(x=375, y=505)
+        ttk.Label(self, text="Password security level").place(x=20, y=540)
         ttk.Spinbox(
             self, textvariable=self.var_password_security_level,
-            from_=1, to=3).place(x=320, y=460, width=120)
+            from_=1, to=3).place(x=320, y=540, width=120)
         ttk.Button(
             self, text="OK", command=self._on_ok,
-            style='secondary.TButton').place(x=40, y=510, width=160)
+            style='secondary.TButton').place(x=40, y=590, width=160)
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
-            style='secondary.Outline.TButton').place(x=260, y=510, width=160)
+            style='secondary.Outline.TButton').place(x=260, y=590, width=160)
         self.pack(fill=BOTH, expand=True)
         cbb_theme.bind(
             '<<ComboboxSelected>>',
             lambda event: self._change_theme(self.var_theme.get()))
         self._change_theme(self.var_theme.get())
+        self._on_enable_comp()
+        self._on_enable_resize()
 
     def _init_vars(self) -> None:
         env = self.env
@@ -1131,6 +1143,9 @@ class SettingsWindow(ttk.Frame):
         self.var_compress_before_pdf_conversion.set(
             env.compress_before_pdf_conversion)
         self.var_compression_ratio.set(env.compression_ratio)
+        self.var_resize_before_pdf_conversion.set(
+            env.resize_before_pdf_conversion)
+        self.var_resized_height.set(env.resized_height)
         self.var_zip_converted_images.set(env.zip_converted_images)
         self.var_password_security_level.set(env.password_security_level)
 
@@ -1139,6 +1154,12 @@ class SettingsWindow(ttk.Frame):
             self.spb_ratio['state'] = DISABLED
         else:
             self.spb_ratio['state'] = NORMAL
+
+    def _on_enable_resize(self) -> None:
+        if not self.var_resize_before_pdf_conversion.get():
+            self.spb_height['state'] = DISABLED
+        else:
+            self.spb_height['state'] = NORMAL
 
     def _on_ok(self) -> None:
         env = self.env
@@ -1153,6 +1174,9 @@ class SettingsWindow(ttk.Frame):
         env.compress_before_pdf_conversion = \
             self.var_compress_before_pdf_conversion.get()
         env.compression_ratio = self.var_compression_ratio.get()
+        env.resize_before_pdf_conversion = \
+            self.var_resize_before_pdf_conversion.get()
+        env.resized_height = self.var_resized_height.get()
         env.zip_converted_images = self.var_zip_converted_images.get()
         env.password_security_level = self.var_password_security_level.get()
         env.save()

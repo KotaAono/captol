@@ -20,7 +20,6 @@ class PdfConverter:
 
         zip_dir = os.path.join(savedir, 'archives')
         pdf = self._fetch_images_as_pdf(image_paths)
-        print(type(pdf))
         self._dump_in_pdf(pdf, savedir, savename_noext)
         if self.env.zip_converted_images:
             self._pack_usedimages_into_zip(image_paths, zip_dir, savename_noext)
@@ -28,10 +27,15 @@ class PdfConverter:
     def _fetch_images_as_pdf(self, image_paths: list[str]) -> bytes:
         do_compress = self.env.compress_before_pdf_conversion
         quality = self.env.compression_ratio
+        do_resize = self.env.resize_before_pdf_conversion
+        height = self.env.resized_height
+
         images = list()
         for path in image_paths:
             try:
                 image = Image.open(path)
+                if do_resize:
+                    image = self._resize(image, height)
                 if do_compress:
                     image = self._compress(image, quality)
                 images.append(image)
@@ -39,6 +43,12 @@ class PdfConverter:
                 pass
 
         return img2pdf.convert(images)
+
+    def _resize(self, image: Image, height: int) -> Image:
+        ratio = height / image.height
+        width = round(image.width * ratio)
+        print(height, width, ratio)
+        return image.resize((width, height), resample=Image.BICUBIC)
 
     def _compress(self, image: Image, quality: int) -> Image:
         buffer = io.BytesIO()

@@ -86,6 +86,8 @@ class Environment:
     auto_clip_interval: float = 1.0
     compress_before_pdf_conversion: bool = True
     compression_ratio: int = 85
+    resize_before_pdf_conversion: bool = False
+    resized_height: int = 720
     zip_converted_images: bool = True
     password_security_level: Literal[1, 2, 3] = 3
 
