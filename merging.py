@@ -47,7 +47,6 @@ class PdfConverter:
     def _resize(self, image: Image, height: int) -> Image:
         ratio = height / image.height
         width = round(image.width * ratio)
-        print(height, width, ratio)
         return image.resize((width, height), resample=Image.BICUBIC)
 
     def _compress(self, image: Image, quality: int) -> Image:

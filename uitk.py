@@ -885,11 +885,9 @@ class MergeTab(ttk.Frame):
         self.block_widgets()
         with ProgressWindow(
             self, "PDF Conversion", "Packing images into a pdf...") as pb:
-            pb.run_try(self.converter.save_as_pdf, self.image_paths, savepath)
-            pb.run_try(messagebox.showinfo, "PDF Convertion", "Completed!")
-            pb.run_try(self._init_vars_conversion)
-            pb.run_exc(messagebox.showerror, "PDF Convertion")
-            pb.run_fin(self.release_widgets)
+            pb.during(self.converter.save_as_pdf, self.image_paths, savepath)
+            pb.after(self._init_vars_conversion)
+            pb.final(self.release_widgets)
 
     def _on_pdffolder_clicked(self) -> None:
         pdf_path = filedialog.askopenfilename(
@@ -927,11 +925,9 @@ class MergeTab(ttk.Frame):
         self.block_widgets()
         with ProgressWindow(
             self, "Password Protection", "Trying to encrypt...") as pb:
-            pb.run_try(self.passlock.encrypt, pdfpath, savepath, pwd1)
-            pb.run_try(messagebox.showinfo, "Lock", "Completed!")
-            pb.run_try(self._init_vars_protection)
-            pb.run_exc(messagebox.showerror, "Lock")
-            pb.run_fin(self.release_widgets)
+            pb.during(self.passlock.encrypt, pdfpath, savepath, pwd1)
+            pb.after(self._init_vars_protection)
+            pb.final(self.release_widgets)
 
     def _unlock(self) -> None:
         pdfpath = self.pdf_path
@@ -944,11 +940,9 @@ class MergeTab(ttk.Frame):
         self.block_widgets()
         with ProgressWindow(
             self, "Password Protection", "Trying to decrypt...") as pb:
-            pb.run_try(self.passlock.decrypt, pdfpath, pdfpath, pwd1)
-            pb.run_try(messagebox.showinfo, "Unlock", "Completed!")
-            pb.run_try(self._init_vars_protection)
-            pb.run_exc(messagebox.showerror, "Unlock")
-            pb.run_fin(self.release_widgets)
+            pb.during(self.passlock.decrypt, pdfpath, pdfpath, pwd1)
+            pb.after(self._init_vars_protection)
+            pb.final(self.release_widgets)
 
     def _verify(self, pwd1: str, pwd2: str = None) -> bool:
         if pwd1 == "":
@@ -971,9 +965,10 @@ class ProgressWindow(ttk.Frame):
         self.parent = parent
         self.title = title
         self.text = text
-        self.try_funcs = list()
+        self.during_funcs = list()
+        self.after_funcs = list()
         self.exc_funcs = list()
-        self.fin_funcs = list()
+        self.final_funcs = list()
 
         self._setup_root()
         self._create_widget()
@@ -985,14 +980,14 @@ class ProgressWindow(ttk.Frame):
         self._run()
         self._wait_finish()
 
-    def run_try(self, func: Callable, *args: Any) -> None:
-        self.try_funcs.append(lambda: func(*args))
+    def during(self, func: Callable, *args: Any) -> None:
+        self.during_funcs.append(lambda: func(*args))
 
-    def run_exc(self, func: Callable, *args: Any) -> None:
-        self.exc_funcs.append(lambda e: func(*args, e))
+    def after(self, func: Callable, *args: Any) -> None:
+        self.after_funcs.append(lambda: func(*args))
 
-    def run_fin(self, func: Callable, *args: Any) -> None:
-        self.fin_funcs.append(lambda: func(*args))
+    def final(self, func: Callable, *args: Any) -> None:
+        self.final_funcs.append(lambda: func(*args))
 
     def _setup_root(self) -> None:
         self.root.title(self.title)
@@ -1010,15 +1005,18 @@ class ProgressWindow(ttk.Frame):
         def _target():
             try:
                 self.bar.start(5)
-                for func in self.try_funcs:
+                for func in self.during_funcs:
+                    func()
+                self.root.destroy()
+                messagebox.showinfo(self.title, "Completed!")
+                for func in self.after_funcs:
                     func()
             except Exception as e:
                 self.bar.stop()
-                for func in self.exc_funcs:
-                    func(e)
+                messagebox.showerror(self.title, e)
             finally:
                 self.root.destroy()
-                for func in self.fin_funcs:
+                for func in self.final_funcs:
                     func()
         thread = self.thread = Thread(target=_target)
         thread.start()
