@@ -3,10 +3,7 @@ testfield/
 past/
 build/
 mkl/
-*.bat
-*.vbs
 *.pptx
 *.png
 *.ipynb
 *.lnk
-*.json
