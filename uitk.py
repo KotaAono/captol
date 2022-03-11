@@ -445,10 +445,6 @@ class ClipFrame(ttk.Frame):
         self._extract()
         for i in range(self.env.image_duplication_check_steps):
             if self.imbuffer.compare_similarity(i+1):
-                self.imbuffer.rehold(i+1)
-                for _ in range(i):
-                    self.imbuffer.delete(1)
-                self.counter.down(i)
                 self.imbuffer.release()
                 return
         self._store()
@@ -1086,7 +1082,7 @@ class SettingsWindow(ttk.Frame):
             self, text="Image duplication check steps").place(x=20, y=260)
         ttk.Spinbox(
             self, textvariable=self.var_image_duplication_check_steps,
-            from_=0, to=5, increment=1).place(x=320, y=260, width=120)
+            from_=0, to=20, increment=1).place(x=320, y=260, width=120)
         ttk.Label(self, text="Auto clip interval").place(x=20, y=300)
         ttk.Spinbox(
             self, textvariable=self.var_auto_clip_interval,
