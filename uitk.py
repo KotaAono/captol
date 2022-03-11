@@ -1138,21 +1138,9 @@ class SettingsWindow(ttk.Frame):
 
     def _init_vars(self) -> None:
         env = self.env
-        self.var_theme.set(env.theme)
-        self.var_area_file.set(env.area_file)
-        self.var_default_save_folder.set(env.default_save_folder)
-        self.var_pixel_difference_threshold.set(env.pixel_difference_threshold)
-        self.var_image_duplication_check_steps.set(
-            env.image_duplication_check_steps)
-        self.var_auto_clip_interval.set(env.auto_clip_interval)
-        self.var_compress_before_pdf_conversion.set(
-            env.compress_before_pdf_conversion)
-        self.var_compression_ratio.set(env.compression_ratio)
-        self.var_resize_before_pdf_conversion.set(
-            env.resize_before_pdf_conversion)
-        self.var_resized_height.set(env.resized_height)
-        self.var_zip_converted_images.set(env.zip_converted_images)
-        self.var_password_security_level.set(env.password_security_level)
+        for key, val in asdict(env).items():
+            var = getattr(self, 'var_'+key)
+            var.set(val)
 
     def _on_enable_comp(self) -> None:
         if not self.var_compress_before_pdf_conversion.get():
@@ -1168,32 +1156,27 @@ class SettingsWindow(ttk.Frame):
 
     def _on_ok(self) -> None:
         env = self.env
-        env.theme = self.var_theme.get()
-        env.area_file = self.var_area_file.get()
-        env.default_save_folder = self.var_default_save_folder.get()
-        env.pixel_difference_threshold = \
-            self.var_pixel_difference_threshold.get()
-        env.image_duplication_check_steps = \
-            self.var_image_duplication_check_steps.get()
-        env.auto_clip_interval = self.var_auto_clip_interval.get()
-        env.compress_before_pdf_conversion = \
-            self.var_compress_before_pdf_conversion.get()
-        env.compression_ratio = self.var_compression_ratio.get()
-        env.resize_before_pdf_conversion = \
-            self.var_resize_before_pdf_conversion.get()
-        env.resized_height = self.var_resized_height.get()
-        env.zip_converted_images = self.var_zip_converted_images.get()
-        env.password_security_level = self.var_password_security_level.get()
+        for key in asdict(env).keys():
+            var = getattr(self, 'var_'+key)
+            setattr(env, key, var.get())
         env.save()
         self.env = env
         self.root.destroy()
 
     def _on_cancel(self) -> None:
-        if not messagebox.askyesno(
-            "Settings", "Do you want to leave? \n(Edits are not saved.)"):
-            return
+        env = self.env
+        for key, val in asdict(env).items():
+            var = getattr(self, 'var_'+key)
+            if val != var.get():
+                if not messagebox.askyesno(
+                    "Settings", "Do you want to leave? \n(Edits are not saved.)"):
+                    return
+                break
         self._change_theme(self.env.theme)
         self.root.destroy()
+
+    def _vars(self) -> list[str]:
+        return list(filter(lambda attr: attr.startswith('var'), dir(self)))
 
     def _change_theme(self, theme: str) -> None:
         Style().theme_use(theme)
