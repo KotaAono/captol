@@ -1072,7 +1072,7 @@ class SettingsWindow(ttk.Frame):
         ttk.Label(self, text="Theme").place(x=20, y=20)
         cbb_theme = ttk.Combobox(
             self, textvariable=self.var_theme, values=[
-                'cosmo', 'flatly', 'journal', 'literal', 'lumen', 'minty',
+                'cosmo', 'flatly', 'journal', 'lumen', 'minty',
                 'pulse', 'sandstone', 'united', 'yeti', 'cyborg', 'darkly',
                 'solar', 'superhero', 'alt', 'clam', 'classic', 'default',
                 'vista', 'winnative', 'xpnative'])
