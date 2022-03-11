@@ -5,7 +5,7 @@ from os.path import basename, splitext
 from threading import Thread
 from time import sleep
 import tkinter as tk
-from tkinter import BOTH, DISABLED, NORMAL, CENTER, LEFT, RIGHT, TOP, BOTTOM, Y
+from tkinter import BOTH, DISABLED, NORMAL, CENTER, LEFT, RIGHT, TOP, BOTTOM, VERTICAL, Y
 from tkinter import ttk
 from tkinter import filedialog, messagebox
 from typing import Any, Callable
@@ -174,6 +174,7 @@ class ExtractTab(ttk.Frame):
     def update_listitems(self, activate_name : str = None) -> None:
         self._reset_clip_areas(self.areadb.namelist)
         if activate_name is not None:
+            self._unselect_lbitem()
             self._select_lbitem(activate_name)
 
     def update_clipinfo(
@@ -207,7 +208,10 @@ class ExtractTab(ttk.Frame):
             frame1, text="Clip area").place(x=10, y=190, width=435, height=220)
         lb_areas = self.lb_areas = tk.Listbox(
             frame1, listvariable=self.var_listitems)
-        lb_areas.place(x=30, y=230, height=158)
+        lb_areas.place(x=30, y=230, height=158, width=205)
+        scrollbar = ttk.Scrollbar(frame1, orient=VERTICAL, command=lb_areas.yview)
+        lb_areas['yscrollcommand'] = scrollbar.set
+        scrollbar.place(x=235, y=230, height=158)
         ttk.Button(
             frame1, text="+",
             command=self._on_plus_clicked).place(x=275, y=230, width=70)
@@ -306,6 +310,11 @@ class ExtractTab(ttk.Frame):
         idx = self.areadb.namelist.index(name)
         self.lb_areas.select_set(idx)
         self.lb_areas.see(idx)
+
+    def _unselect_lbitem(self) -> None:
+        idx = self.lb_areas.curselection()
+        if len(idx):
+            self.lb_areas.select_clear(idx[0])
 
     def _get_one_lbselection(self) -> str | None:
         idx = self.lb_areas.curselection()
@@ -464,8 +473,8 @@ class ClipFrame(ttk.Frame):
 class EditDialog(ttk.Frame):
 
     def __init__(
-            self, parent: ExtractTab, areadb: AreaDB,
-            name: str = None) -> None:
+            self, parent: ExtractTab, areadb: AreaDB, name: str = None
+        ) -> None:
         root = self.root = tk.Toplevel(parent)
         super().__init__(root)
         self.parent = parent
@@ -485,6 +494,8 @@ class EditDialog(ttk.Frame):
     def block_widgets(self) -> None:
         for widget in self.winfo_children():
             try:
+                if widget.winfo_name() == '!button3':
+                    continue
                 widget['state'] = DISABLED
             except tk.TclError:
                 pass
@@ -632,8 +643,8 @@ class Drawer(ttk.Frame):
 
     def __init__(
         self, parent: EditDialog, xparentwindow: TransparentWindow,
-        var_x: tk.IntVar, var_y: tk.IntVar, var_w: tk.IntVar,
-        var_h: tk.IntVar) -> None:
+        var_x: tk.IntVar, var_y: tk.IntVar, var_w: tk.IntVar, var_h: tk.IntVar
+    ) -> None:
         root = self.root = tk.Toplevel(parent)
         super().__init__(root)
         self.root = root
