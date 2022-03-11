@@ -1175,9 +1175,6 @@ class SettingsWindow(ttk.Frame):
         self._change_theme(self.env.theme)
         self.root.destroy()
 
-    def _vars(self) -> list[str]:
-        return list(filter(lambda attr: attr.startswith('var'), dir(self)))
-
     def _change_theme(self, theme: str) -> None:
         Style().theme_use(theme)
 
