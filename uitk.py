@@ -88,23 +88,23 @@ class Application(ttk.Frame):
             self.root.iconbitmap(ICONFILE)
         except FileNotFoundError:
             pass
-        self.root.title("Captol v1.0")
+        self.root.title("Captol")
         self.root.attributes('-topmost', True)
-        self.root.geometry("460x530-0+0")
+        self.root.geometry(f"460x507-0+10")
         self.root.resizable(False, False)
         self.root = Style(self.env.theme).master
 
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
         note.root = self
-        note.place(x=0, y=10, relwidth=1, height=520)
+        note.place(x=0, y=4, relwidth=1, height=527)
         note.add(ExtractTab(
             note, parent=self, env=self.env), text="1. Extract")
         note.add(MergeTab(
             note, parent=self, env=self.env), text="2. Merge  ")
         ttk.Button(
             self, text="Settings", style='secondary.Outline.TButton',
-            command=self._on_settings_clicked).place(x=360, y=4, width=95)
+            command=self._on_settings_clicked).place(x=360, y=0, width=95)
         self.pack(fill=BOTH, expand=True)
 
     def _on_settings_clicked(self) -> None:
@@ -119,8 +119,8 @@ class Application(ttk.Frame):
 class ExtractTab(ttk.Frame):
 
     def __init__(
-            self, root: ttk.Notebook, parent: Application,
-            env: Environment) -> None:
+        self, root: ttk.Notebook, parent: Application, env: Environment
+    ) -> None:
         super().__init__(root)
         self.root = root
         self.parent = parent
@@ -145,14 +145,14 @@ class ExtractTab(ttk.Frame):
     def shrink(self) -> None:
         self.frame1.pack_forget()
         self.parent.disable_mergetab()
-        self.parent.resize("460x110")
+        self.parent.resize('460x93')
 
     def extend(self) -> None:
         self.frame2.pack_forget()
         self.frame1.pack(fill=BOTH, expand=True)
-        self.frame2.pack(fill=BOTH, expand=True)
+        self.frame2.pack(fill=BOTH, expand=True, pady=5)
         self.parent.enable_mergetab()
-        self.parent.resize("460x530")
+        self.parent.resize('460x507')
 
     def block_widgets(self) -> None:
         for widget in self.frame1.winfo_children():
@@ -188,7 +188,7 @@ class ExtractTab(ttk.Frame):
 
         ttk.LabelFrame(
             frame1,
-            text="Save folder").place(x=10, y=10, width=435, height=170)
+            text="Save folder info").place(x=10, y=10, width=435, height=170)
         ttk.Button(
             frame1, text="📁", style='secondary.Outline.TButton',
             command=self._on_folder_clicked).place(x=30, y=50, width=45)
@@ -227,7 +227,7 @@ class ExtractTab(ttk.Frame):
         lb_areas.bind('<<ListboxSelect>>', self._on_area_selected)
 
         frame2 = self.frame2 = ttk.Frame(self)
-        frame2.pack(fill=BOTH, expand=True)
+        frame2.pack(fill=BOTH, expand=True, pady=5)
         clipframe = self.clipframe = ClipFrame(
             frame2, parent=self, env=self.env, clipper=self.clipper,
             counter=self.counter)
@@ -328,8 +328,9 @@ class ExtractTab(ttk.Frame):
 class ClipFrame(ttk.Frame):
 
     def __init__(
-            self, root: ttk.Frame, parent: ExtractTab, env: Environment,
-            clipper: Clipper, counter: ImageCounter) -> None:
+        self, root: ttk.Frame, parent: ExtractTab, env: Environment,
+        clipper: Clipper, counter: ImageCounter
+    ) -> None:
         super().__init__(root)
         self.root = root
         self.parent = parent
@@ -375,25 +376,25 @@ class ClipFrame(ttk.Frame):
 
     def _create_widgets(self) -> None:
         ttk.Button(
-            self, text="📸", style='warning.TButton',
-            command=self._on_camera_clicked).place(x=10, y=10, width=60)
+            self, text="✂", style='primary.TButton',
+            command=self._on_camera_clicked).place(x=10, y=2, width=60)
         ttk.Label(
             self, text="[                   ]",
-            anchor=CENTER).place(x=80, y=15, width=130)
+            anchor=CENTER).place(x=80, y=5, width=130)
         ttk.Label(
             self, textvariable=self.var_areaname,
-            anchor=CENTER).place(x=90, y=15, width=110)
+            anchor=CENTER).place(x=90, y=5, width=110)
         ttk.Radiobutton(
             self, text="Manual", value=1, variable=self.var_clipmode,
-            command=self._on_manual_clicked).place(x=225, y=18)
+            command=self._on_manual_clicked).place(x=225, y=8)
         ttk.Radiobutton(
             self, text="Auto", value=2, variable=self.var_clipmode,
             style='danger.TRadiobutton',
-            command=self._on_auto_clicked).place(x=320, y=18)
+            command=self._on_auto_clicked).place(x=320, y=8)
         fold_button = self.fold_button = ttk.Button(
             self, text="▲", style='secondary.Outline.TButton',
             command=self._on_fold_clicked)
-        fold_button.place(x=400, y=10, width=45)
+        fold_button.place(x=400, y=2, width=45)
 
     def _init_vars(self) -> None:
         self.var_clipmode.set(1)
@@ -414,7 +415,7 @@ class ClipFrame(ttk.Frame):
         self.parent.extend()
         self.fold_button['text'] = "▲"
         self.fold_button['command'] = self._on_fold_clicked
-        self.parent.parent.note.place_configure(height=520)
+        self.parent.parent.note.place_configure(height=526)
 
     def _on_manual_clicked(self) -> None:
         if self.thread_alive:
@@ -473,8 +474,8 @@ class ClipFrame(ttk.Frame):
 class EditDialog(ttk.Frame):
 
     def __init__(
-            self, parent: ExtractTab, areadb: AreaDB, name: str = None
-        ) -> None:
+        self, parent: ExtractTab, areadb: AreaDB, name: str = None
+    ) -> None:
         root = self.root = tk.Toplevel(parent)
         super().__init__(root)
         self.parent = parent
@@ -527,7 +528,7 @@ class EditDialog(ttk.Frame):
         ttk.LabelFrame(self, text="Area").place(
             x=10, y=60, width=440, height=130)
         ttk.Button(
-            self, text="Direct\nDraw",
+            self, text="Direct\nDraw", style='warning.TButton',
             command=self._on_direct_draw).place(
                 x=30, y=95, width=90, height=80)
         ttk.Label(self, text="x:").place(x=150, y=95)
@@ -552,10 +553,10 @@ class EditDialog(ttk.Frame):
         spb_h.place(x=350, y=140, width=80)
         ttk.Button(
             self, text="OK", command=self._on_ok,
-            style='secondary.TButton').place(x=40, y=200, width=160)
+            style='primary.TButton').place(x=40, y=200, width=160)
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
-            style='secondary.Outline.TButton').place(x=260, y=200, width=160)
+            style='primary.Outline.TButton').place(x=260, y=200, width=160)
         spb_x.bind('<KeyRelease>', self._on_spb_changed)
         spb_w.bind('<KeyRelease>', self._on_spb_changed)
         spb_y.bind('<KeyRelease>', self._on_spb_changed)
@@ -744,27 +745,27 @@ class TransparentWindow(tk.Frame):
         self.root.geometry(getmetry)
 
     def _setup_root(self) -> None:
-        self.root.attributes('-alpha', 0.3)
+        self.root.attributes('-alpha', 0.2)
         self.root.resizable(False, False)
         self.root.overrideredirect(True)
         TransparentWindow.roots.append(self.root)
 
     def _create_widgets(self) -> None:
         frame = self.markframe = tk.Frame(self, bg='white')
-        size_v = 30
+        size_v = 20
         size_h = int(size_v * 1.6)
-        size_c = int(size_v * 0.4)
+        size_c = int(size_v * 0.8)
         tk.Label(
-            frame, text='◀◁', font=('', size_h, 'bold'),
+            frame, text='◀', font=('', size_h, 'bold'),
             fg='black', bg='white').pack(side=LEFT, fill=Y)
         tk.Label(
-            frame, text='▷▶', font=('', size_h, 'bold'),
+            frame, text='▶', font=('', size_h, 'bold'),
             fg='black', bg='white').pack(side=RIGHT, fill=Y)
         tk.Label(
-            frame, text='▲\n△', font=('', size_v),
+            frame, text='▲', font=('', size_v),
             fg='black', bg='white').pack(side=TOP)
         tk.Label(
-            frame, text='▽\n▼', font=('', size_v),
+            frame, text='▼', font=('', size_v),
             fg='black', bg='white').pack(side=BOTTOM)
         tk.Label(
             frame, text='＋', font=('', size_c),
@@ -833,22 +834,22 @@ class MergeTab(ttk.Frame):
             command=self._on_convert_clicked).place(x=150, y=155, width=160)
         ttk.LabelFrame(
             self, text="Password protection").place(
-                x=10, y=220, width=435, height=200)
+                x=10, y=200, width=435, height=200)
         ttk.Button(
             self, text="📁", style='secondary.Outline.TButton',
-            command=self._on_pdffolder_clicked).place(x=30, y=260, width=45)
+            command=self._on_pdffolder_clicked).place(x=30, y=240, width=45)
         ttk.Entry(
             self, textvariable=self.var_pdfpath,
-            state='readonly').place(x=80, y=260, width=345, height=37)
-        ttk.Label(self, text="Password:").place(x=30, y=320)
+            state='readonly').place(x=80, y=240, width=345, height=37)
+        ttk.Label(self, text="Password:").place(x=30, y=300)
         ent_pwd1 = self.ent_pwd1 = ttk.Entry(self, textvariable=self.var_pwd1)
-        ent_pwd1.place(x=145, y=315, width=280, height=37)
-        ttk.Label(self, text="Again:").place(x=30, y=370)
+        ent_pwd1.place(x=145, y=295, width=280, height=37)
+        ttk.Label(self, text="Again:").place(x=30, y=350)
         ent_pwd2 = self.ent_pwd2 = ttk.Entry(
             self, show="●", textvariable=self.var_pwd2)
-        ent_pwd2.place(x=145, y=365, width=280, height=37)
+        ent_pwd2.place(x=145, y=345, width=280, height=37)
         btn_lock = self.btn_lock = ttk.Button(self)
-        btn_lock.place(x=150, y=435, width=160)
+        btn_lock.place(x=150, y=415, width=160)
         self.pack(fill=BOTH, expand=True)
 
     def _init_vars_conversion(self) -> None:
@@ -1124,10 +1125,10 @@ class SettingsWindow(ttk.Frame):
             from_=1, to=3).place(x=320, y=540, width=120)
         ttk.Button(
             self, text="OK", command=self._on_ok,
-            style='secondary.TButton').place(x=40, y=590, width=160)
+            style='primary.TButton').place(x=40, y=590, width=160)
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
-            style='secondary.Outline.TButton').place(x=260, y=590, width=160)
+            style='primary.Outline.TButton').place(x=260, y=590, width=160)
         self.pack(fill=BOTH, expand=True)
         cbb_theme.bind(
             '<<ComboboxSelected>>',
