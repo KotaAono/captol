@@ -12,6 +12,3 @@ Press the clip button to save the image of the specified area in sequential numb
 
 
 To encrypt and decrypt pdf with password, you need to install "qpdf" and make a pass beforehand.
-
-## Demo
-![スクリーンショット (307)](https://user-images.githubusercontent.com/88641432/163703618-9c012a9e-fb9c-4157-af0b-e8639f58e2e3.png)
