@@ -90,7 +90,7 @@ class Application(ttk.Frame):
             pass
         self.root.title("Captol")
         self.root.attributes('-topmost', True)
-        self.root.geometry(f"460x507-0+10")
+        self.root.geometry("460x507-0+10")
         self.root.resizable(False, False)
         self.root = Style(self.env.theme).master
 
@@ -665,7 +665,7 @@ class Drawer(ttk.Frame):
         parent.block_widgets()
 
     def _setup_root(self) -> None:
-        self.root.attributes('-alpha', 0.1)
+        self.root.attributes('-alpha', 0.002)
         x, y, w, h = get_expanded_screen_info()
         self.root.geometry(f'{w}x{h}+{x}+{y}')
         self.root.resizable(False, False)
@@ -673,7 +673,7 @@ class Drawer(ttk.Frame):
         self.minx, self.miny = x, y
 
     def _create_widgets(self) -> None:
-        canvas = self.canvas = tk.Canvas(self, bg='cyan', highlightthickness=0)
+        canvas = self.canvas = tk.Canvas(self, highlightthickness=0)
         canvas.pack(fill=BOTH, expand=True)
         canvas.bind('<ButtonPress-1>', self._on_drag_start)
         canvas.bind('<B1-Motion>', self._on_moving)
