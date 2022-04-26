@@ -10,7 +10,7 @@ import tkinter as tk
 
 import cv2
 import numpy as np
-from data import Rectangle, Environment
+from captol.backend.data import Rectangle, Environment
 
 
 class Clipper:

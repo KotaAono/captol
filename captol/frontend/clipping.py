@@ -6,13 +6,30 @@ import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL, CENTER
 from tkinter import ttk
 from tkinter import messagebox
+from typing import TYPE_CHECKING
+from win32api import EnumDisplayMonitors
 
-from .utils import get_expanded_screen_info, unique_str
-from .ui import ICONFILE
-from .extracttab import ExtractTab
-from .subframe import TransparentWindow
-from ..backend.data import AreaDB, Rectangle, Environment
-from ..backend.extraction import Clipper, ImageCounter, ImageBuffer
+from captol.utils.const import ICON_FILE
+from captol.utils.path import unique_str
+from captol.frontend.subframe import TransparentWindow
+from captol.backend.data import Rectangle
+from captol.backend.extraction import ImageBuffer
+
+if TYPE_CHECKING:
+    from captol.frontend.extracttab import ExtractTab
+    from captol.backend.data import AreaDB, Environment
+    from captol.backend.extraction import Clipper, ImageCounter
+
+
+def get_expanded_screen_info() -> tuple[int]:
+    xmin, ymin, xmax, ymax = 0, 0, 0, 0
+    for winfo in EnumDisplayMonitors():
+        x1, y1, x2, y2 = winfo[-1]
+        xmin = min(x1, xmin)
+        ymin = min(y1, ymin)
+        xmax = max(x2, xmax)
+        ymax = max(y2, ymax)
+    return xmin, ymin, xmax-xmin, ymax-ymin
 
 
 class ClipFrame(ttk.Frame):
@@ -200,7 +217,7 @@ class EditDialog(ttk.Frame):
 
     def _setup_root(self) -> None:
         try:
-            self.root.iconbitmap(ICONFILE)
+            self.root.iconbitmap(ICON_FILE)
         except FileNotFoundError:
             pass
         self.root.title("Edit")
