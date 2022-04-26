@@ -33,8 +33,7 @@ def create_vbs(precmds: List[str] = []) -> None:
 
 
 def create_shortcut(dir_: str) -> None:
-    if not os.path.isdir(dir_):
-        print('Directory not found.')
+    check_directory(dir_)
 
     lnk_path = os.path.join(dir_, 'Captol.lnk')
     ws = win32com.client.Dispatch("WScript.Shell")
@@ -47,8 +46,7 @@ def create_shortcut(dir_: str) -> None:
 
 def check_directory(dir_: str) -> None:
     if not os.path.isdir(dir_):
-        print(f'Directory "{dir_}" not found.')
-        return
+        raise Exception(f'Directory "{dir_}" not found.')
 
 
 def run() -> None:
