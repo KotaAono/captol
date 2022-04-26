@@ -2,15 +2,16 @@
 Captol is a python-based GUI application for reconstructing screen-sharing documents.
 
 ## Demo
+<img src="https://user-images.githubusercontent.com/88641432/165248360-bf9e38e5-f1cb-44e5-a033-441989d16e34.png" height=300><img src="https://user-images.githubusercontent.com/88641432/165248729-9b462d20-0496-46ce-816a-f98e8e9165e8.png" height=300>
 
-### Extract
+### Extract (left)
 1. Select a folder to save screenshots.
-2. Select an area to clip. You can edit areas from write buttons. <br>
+2. Select an area to clip. You can edit areas from right buttons. <br>
 "Edit" -> "Direct Draw" allows you to specify an area by dragging.
 3. Set the clip area.
 4. Clip! "Auto" mode detects screen switching and automatically takes screenshots
 
-### Merge
+### Merge (right)
 1. Select images to be converted to pdf.
 2. Click to Convert!
 3. Select pdf to set password.
