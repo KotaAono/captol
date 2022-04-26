@@ -1,10 +1,11 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict
 import json
+from os import makedirs
+from os.path import dirname
 from typing import Literal
 
-
-ENV_FILE = 'env.json'
+from captol.utils.const import ENV_FILE, AREA_FILE
 
 
 class AreaDB:
@@ -17,7 +18,6 @@ class AreaDB:
         try:
             dict_areas = self._read_filedata()
         except FileNotFoundError as e:
-            print(e)
             dict_areas = self._load_defaults()
         self._store_astype_rect(dict_areas)
 
@@ -49,7 +49,9 @@ class AreaDB:
         return dict_areas
 
     def _write_filedata(self, dict_areas: dict[dict]) -> None:
-        with open(self.env.area_file, 'w') as f:
+        savepath = self.env.area_file
+        makedirs(dirname(savepath), exist_ok=True)
+        with open(savepath, 'w') as f:
             json.dump(dict_areas, f, indent=4)
 
     def _load_defaults(self) -> dict[dict]:
@@ -79,7 +81,7 @@ class Rectangle:
 @dataclass
 class Environment:
     theme: str = "darkly"
-    area_file: str = "./areas.json"
+    area_file: str = AREA_FILE
     default_save_folder: str = "C:/Users/hnlPublic/Desktop"
     pixel_difference_threshold: int = 10000
     image_duplication_check_steps: int = 1
@@ -103,6 +105,7 @@ class Environment:
             pass
 
     def save(self) -> None:
+        makedirs(dirname(ENV_FILE), exist_ok=True)
         with open(ENV_FILE, 'w') as f:
             json.dump(asdict(self), f, indent=4)
 
