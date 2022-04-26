@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 
+
 setup(
     name="captol",
     version="2.0",

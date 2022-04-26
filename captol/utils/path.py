@@ -1,22 +1,6 @@
 from __future__ import annotations
-from ctypes import windll
-from os.path import basename, splitext
+from os.path import basename, splitext, join, dirname
 from win32api import EnumDisplayMonitors
-
-
-def set_high_resolution() -> None:
-    windll.shcore.SetProcessDpiAwareness(True)
-
-
-def get_expanded_screen_info() -> tuple[int]:
-    xmin, ymin, xmax, ymax = 0, 0, 0, 0
-    for winfo in EnumDisplayMonitors():
-        x1, y1, x2, y2 = winfo[-1]
-        xmin = min(x1, xmin)
-        ymin = min(y1, ymin)
-        xmax = max(x2, xmax)
-        ymax = max(y2, ymax)
-    return xmin, ymin, xmax-xmin, ymax-ymin
 
 
 def noext_basename(path: str) -> str:

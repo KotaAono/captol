@@ -1,15 +1,19 @@
 from __future__ import annotations
+from ctypes import windll
 import tkinter as tk
 
-from .mainframe import Application
-from .utils import set_high_resolution
+from captol.frontend.mainframe import Application
 
 
-ICONFILE = '../icon/icon.ico'
+def set_high_resolution() -> None:
+    windll.shcore.SetProcessDpiAwareness(True)
 
 
 def run() -> None:
-    set_high_resolution()
+    try:
+        set_high_resolution()
+    except:
+        pass
     root = tk.Tk()
     Application(root)
     root.mainloop()
