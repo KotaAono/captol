@@ -7,5 +7,5 @@ setup(
     license="MIT",
     description="A python-based GUI application for reconstructing screen-sharing documents.",
     packages=find_packages(),
-    include_package_data=True
+    package_data={"": ["*.ico"]}
 )
