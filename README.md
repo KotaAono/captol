@@ -34,7 +34,7 @@ python -m captol
 * Start with GUI<br>
 You can create shortcuts by executing the following command. After that you can click on the shortcut icon to launch this app.
 ```
-python -m captol --create-shortcut (or -c)
+python -m captol --create-shortcut
 ```
 
 ## Environment
