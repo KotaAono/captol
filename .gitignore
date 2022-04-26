@@ -1,10 +1,4 @@
-__pycache__
-testfield/
-past/
-build/
-mkl/
-*.pptx
-*.png
-*.ipynb
-*.lnk
+captol.egg-info/
+__pycache__/
 *.json
+*.vbs

@@ -1,6 +1,7 @@
+from glob import glob
 from importlib import reload, import_module
-from os.path import dirname, basename, splitext
-from sys import argv
+import os
+from os.path import dirname, basename, join
 
 import tkinter as tk
 from tkinter import BOTH
@@ -8,8 +9,19 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 
-DIR = dirname(argv[1])
-FILE = basename(argv[1])
+def source_pyfiles(*dirs):
+    files = []
+    for dir_ in dirs:
+        files += glob(join(dir_, '*.py'))
+    return list(map(lambda fp: basename(fp), files))
+
+
+CURDIR = dirname(__file__)
+PARDIR = join(CURDIR, '..\\')
+FILES = source_pyfiles(
+    join(PARDIR, 'frontend'),
+    join(PARDIR, 'backend'),
+    PARDIR, CURDIR)
 
 
 def windows_high_resolution():
@@ -18,14 +30,20 @@ def windows_high_resolution():
 
 
 class TkHandler(FileSystemEventHandler):
-    def __init__(self, callback, filename):
+    def __init__(self, callback, filenames):
         super().__init__()
         self.callback = callback
-        self.filename = filename
+        self.filenames = filenames
+        self.old = 0
 
-    def on_any_event(self, event):
-        if basename(event.src_path) == self.filename:
-            self.callback()
+    def on_modified(self, event):
+        fullpath = event.src_path
+        if basename(fullpath) in self.filenames:
+            statbuf = os.stat(fullpath)
+            self.new = statbuf.st_mtime
+            if (self.new - self.old) > 0.5:
+                self.callback()
+            self.old = self.new
 
 
 class TkViewer(tk.Frame):
@@ -37,7 +55,7 @@ class TkViewer(tk.Frame):
 
     def run(self):
         observer = Observer()
-        observer.schedule(TkHandler(self.update, FILE), DIR)
+        observer.schedule(TkHandler(self.update, FILES), PARDIR, recursive=True)
         observer.start()
         self.update()
 
@@ -47,7 +65,8 @@ class TkViewer(tk.Frame):
             self.load()
             self.show_ui()
         except Exception as e:
-            self.show_message(e)
+            from traceback import TracebackException
+            self.show_message(''.join(TracebackException.from_exception(e).format()))
 
     def clear(self):
         if self.widget is not None:
@@ -58,19 +77,23 @@ class TkViewer(tk.Frame):
         try:
             self.ui = reload(self.ui)
         except AttributeError:
-            self.ui = import_module(splitext(FILE)[0], DIR)
+            self.ui = import_module('captol.frontend.ui')
 
     def show_ui(self):
         self.widget = self.ui.Application(self.root)
+        print('GUI refreshed')
 
     def show_message(self, e):
         widget = self.widget = tk.Message(self, text=str(e))
-        widget.bind("<Configure>", lambda event: event.widget.config(width=self.root.winfo_width()))
+        widget.bind(
+            "<Configure>",
+            lambda event: event.widget.config(width=self.root.winfo_width()))
         widget.pack(fill=BOTH, expand=True)
         self.pack(fill=BOTH, expand=True)
 
 
-if __name__ == '__main__':
+def run() -> None:
+    print('Running in developer mode')
     try:
         windows_high_resolution()
     except:
