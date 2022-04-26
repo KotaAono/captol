@@ -6,5 +6,10 @@ setup(
     version="2.0",
     license="MIT",
     description="A python-based GUI application for reconstructing screen-sharing documents.",
-    packages=["captol"]
+    packages=[
+        "captol/backend",
+        "captol/frontend",
+        "captol/devel",
+        "captol/utils"
+    ]
 )
