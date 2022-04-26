@@ -4,11 +4,12 @@ import tkinter as tk
 from tkinter import BOTH, LEFT, RIGHT, TOP, BOTTOM, Y
 from tkinter import ttk
 from tkinter import messagebox
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
-from .clipping import ClipFrame, EditDialog
-from .extracttab import ExtractTab
-from .mergetab import MergeTab
+if TYPE_CHECKING:
+    from captol.frontend.clipping import ClipFrame, EditDialog
+    from captol.frontend.extracttab import ExtractTab
+    from captol.frontend.mergetab import MergeTab
 
 
 class TransparentWindow(tk.Frame):

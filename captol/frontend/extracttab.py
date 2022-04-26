@@ -4,13 +4,18 @@ import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL, CENTER, VERTICAL
 from tkinter import ttk
 from tkinter import filedialog, messagebox
+from typing import TYPE_CHECKING
 
-from .clipping import ClipFrame, EditDialog
-from .utils import shorten
-from .subframe import TransparentWindow
-from .mainframe import Application
-from ..backend.data import AreaDB, Rectangle, Environment
-from ..backend.extraction import Clipper, ImageCounter
+from captol.frontend.clipping import ClipFrame, EditDialog
+from captol.utils.path import shorten
+from captol.frontend.subframe import TransparentWindow
+from captol.backend.extraction import Clipper, ImageCounter
+from captol.backend.data import AreaDB
+
+if TYPE_CHECKING:
+    from captol.frontend.mainframe import Application
+    from captol.backend.data import Rectangle, Environment
+
 
 
 class ExtractTab(ttk.Frame):

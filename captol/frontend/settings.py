@@ -4,12 +4,14 @@ import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL
 from tkinter import ttk
 from tkinter import messagebox
+from typing import TYPE_CHECKING
 
 from ttkbootstrap import Style
 
-from .ui import ICONFILE
-from .mainframe import Application
-from ..backend.data import Environment
+from captol.utils.const import ICON_FILE
+if TYPE_CHECKING:
+    from captol.frontend.mainframe import Application
+    from captol.backend.data import Environment
 
 
 class SettingsWindow(ttk.Frame):
@@ -38,7 +40,7 @@ class SettingsWindow(ttk.Frame):
 
     def _setup_root(self) -> None:
         try:
-            self.root.iconbitmap(ICONFILE)
+            self.root.iconbitmap(ICON_FILE)
         except FileNotFoundError:
             pass
         self.root.title("Environment Settings")

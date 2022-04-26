@@ -5,11 +5,11 @@ from tkinter import ttk
 
 from ttkbootstrap import Style
 
-from .extracttab import ExtractTab
-from .mergetab import MergeTab
-from .settings import SettingsWindow
-from .ui import ICONFILE
-from ..backend.data import Environment
+from captol.frontend.extracttab import ExtractTab
+from captol.frontend.mergetab import MergeTab
+from captol.frontend.settings import SettingsWindow
+from captol.utils.const import ICON_FILE
+from captol.backend.data import Environment
 
 
 class Application(ttk.Frame):
@@ -34,7 +34,7 @@ class Application(ttk.Frame):
 
     def _setup_root(self) -> None:
         try:
-            self.root.iconbitmap(ICONFILE)
+            self.root.iconbitmap(ICON_FILE)
         except FileNotFoundError:
             pass
         self.root.title("Captol")

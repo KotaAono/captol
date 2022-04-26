@@ -3,12 +3,15 @@ import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL, CENTER
 from tkinter import ttk
 from tkinter import filedialog, messagebox
+from typing import TYPE_CHECKING
 
-from .mainframe import Application
-from .subframe import ProgressWindow
-from .utils import append_ext, noext_basename, shorten
-from ..backend.data import Environment
-from ..backend.merging import PdfConverter, PassLock
+from captol.frontend.subframe import ProgressWindow
+from captol.utils.path import append_ext, noext_basename, shorten
+from captol.backend.merging import PdfConverter, PassLock
+
+if TYPE_CHECKING:
+    from captol.frontend.mainframe import Application
+    from captol.backend.data import Environment
 
 
 class MergeTab(ttk.Frame):
