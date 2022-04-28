@@ -17,10 +17,10 @@ def unique_str(orgstr: str, strlist: list[str]) -> str:
 
 
 def shorten(path: str, maxlen: int) -> str:
-    path = path.replace('/', '\\')
-    dirlist = path.split('\\')
+    path = path.replace('\\', '/')
+    dirlist = path.split('/')
     if len(dirlist) > maxlen:
-        return '\\'.join(['...', dirlist[-2], dirlist[-1]])
+        return '/'.join(['...', dirlist[-2], dirlist[-1]])
     return path
 
 
