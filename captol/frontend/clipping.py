@@ -87,25 +87,21 @@ class ClipFrame(ttk.Frame):
             self, text="✂", bootstyle='success-button',
             command=self._on_camera_clicked).place(x=10, y=2, width=60)
         ttk.Label(
-            self, text="[                   ]",
-            anchor=CENTER).place(x=80, y=5, width=130)
+            self, text="["+" "*38+"]").place(x=85, y=5, width=220)
         ttk.Label(
             self, textvariable=self.var_areaname,
-            anchor=CENTER).place(x=90, y=5, width=110)
+            anchor=CENTER).place(x=100, y=5, width=180)
         ttk.Radiobutton(
-            self, text="Manual", value=1, variable=self.var_clipmode,
-            command=self._on_manual_clicked).place(x=225, y=8)
-        ttk.Radiobutton(
-            self, text="Auto", value=2, variable=self.var_clipmode,
-            bootstyle='danger-radiobutton',
-            command=self._on_auto_clicked).place(x=320, y=8)
+            self, text="Auto", variable=self.var_clipmode,
+            bootstyle='danger-roundtoggle',
+            command=self._on_auto_clicked).place(x=300, y=8)
         fold_button = self.fold_button = ttk.Button(
             self, text="▲", bootstyle='secondary-outline-button',
             command=self._on_fold_clicked)
         fold_button.place(x=400, y=2, width=45)
 
     def _init_vars(self) -> None:
-        self.var_clipmode.set(1)
+        self.var_clipmode.set(2)
         self.var_areaname.set("------")
 
     def _on_camera_clicked(self) -> None:
@@ -125,35 +121,39 @@ class ClipFrame(ttk.Frame):
         self.fold_button['command'] = self._on_fold_clicked
         self.parent.parent.note.place_configure(height=526)
 
-    def _on_manual_clicked(self) -> None:
-        if self.thread_alive:
-            self._end_autoclip()
-            messagebox.showinfo("Autoclip", "Autoclip stopped.")
-            self.parent.release_widgets()
-
     def _on_auto_clicked(self) -> None:
-        if messagebox.askyesno(
-            "Autoclip", "Do you want to enable Autoclip?"):
-            self.parent.block_widgets()
-            self.root.after(500, self._start_autoclip)  # messageboxをキャプチャしないように
+        if not self.thread_alive:
+            self._start_autoclip()
         else:
-            self.var_clipmode.set(1)
+            self._end_autoclip()
 
     def _start_autoclip(self) -> None:
-        def _autoclip():
+        def _target():
             while self.thread_alive:
                 self._noduplicate_save()
                 sleep(self.env.auto_clip_interval)
 
-        self.thread_alive = True
-        thread = self.thread = Thread(target=_autoclip)
-        thread.start()
+        def _run_thread():
+            self.thread_alive = True
+            thread = self.thread = Thread(target=_target)
+            thread.start()
+
+        if messagebox.askyesno(
+            "Autoclip", "Do you want to enable Autoclip?"):
+            self.parent.block_widgets()
+            self.root.after(500, _run_thread)  # messageboxをキャプチャしないように
+        else:
+            self.var_clipmode.set(2)
 
     def _end_autoclip(self) -> None:
-        if self.thread is not None:
-            self.thread_alive = False
-            self.thread.join()
-            self.thread = None
+        self.var_clipmode.set(2)
+        if self.thread_alive:
+            if self.thread is not None:
+                self.thread_alive = False
+                self.thread.join()
+                self.thread = None
+            messagebox.showinfo("Autoclip", "Autoclip stopped.")
+            self.parent.release_widgets()
 
     def _normal_save(self) -> None:
         self._extract()
