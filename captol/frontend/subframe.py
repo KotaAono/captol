@@ -2,9 +2,10 @@ from __future__ import annotations
 from threading import Thread
 import tkinter as tk
 from tkinter import BOTH, LEFT, RIGHT, TOP, BOTTOM, Y
-from tkinter import ttk
 from tkinter import messagebox
 from typing import TYPE_CHECKING, Any, Callable
+
+import ttkbootstrap as ttk
 
 if TYPE_CHECKING:
     from captol.frontend.clipping import ClipFrame, EditDialog
@@ -13,10 +14,10 @@ if TYPE_CHECKING:
 
 
 class TransparentWindow(tk.Frame):
-    roots: list[tk.Toplevel] = list()
+    roots: list[ttk.Toplevel] = list()
 
     def __init__(self, parent: ExtractTab | ClipFrame | EditDialog) -> None:
-        root = self.root = tk.Toplevel(parent)
+        root = self.root = ttk.Toplevel(parent)
         super().__init__(root, bg='white')
         self.parent = parent
         self.markframe = None
@@ -86,7 +87,7 @@ class TransparentWindow(tk.Frame):
 class ProgressWindow(ttk.Frame):
 
     def __init__(self, parent: MergeTab, title: str, text: str) -> None:
-        root = self.root = tk.Toplevel(parent)
+        root = self.root = ttk.Toplevel(parent)
         super().__init__(root)
         self.parent = parent
         self.title = title

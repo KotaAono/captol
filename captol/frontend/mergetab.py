@@ -1,9 +1,10 @@
 from __future__ import annotations
 import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL, CENTER
-from tkinter import ttk
 from tkinter import filedialog, messagebox
 from typing import TYPE_CHECKING
+
+import ttkbootstrap as ttk
 
 from captol.frontend.subframe import ProgressWindow
 from captol.utils.path import append_ext, noext_basename, shorten
@@ -57,7 +58,7 @@ class MergeTab(ttk.Frame):
             self,
             text="PDF conversion").place(x=10, y=10, width=435, height=130)
         ttk.Button(
-            self, text="📁", style='secondary.Outline.TButton',
+            self, text="📁", bootstyle='secondary-outline-button',
             command=self._on_imagefolder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             self, textvariable=self.var_imagename_from,
@@ -77,7 +78,7 @@ class MergeTab(ttk.Frame):
             self, text="Password protection").place(
                 x=10, y=200, width=435, height=200)
         ttk.Button(
-            self, text="📁", style='secondary.Outline.TButton',
+            self, text="📁", bootstyle='secondary-outline-button',
             command=self._on_pdffolder_clicked).place(x=30, y=240, width=45)
         ttk.Entry(
             self, textvariable=self.var_pdfpath,

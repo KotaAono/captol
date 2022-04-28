@@ -4,6 +4,7 @@ import os
 from os.path import dirname, basename, join
 
 import tkinter as tk
+import ttkbootstrap as ttk
 from tkinter import BOTH
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -79,6 +80,7 @@ class TkViewer(tk.Frame):
             self.ui = reload(self.ui)
         except AttributeError:
             self.ui = import_module('captol.frontend.ui')
+            print('First import')
 
     def show_ui(self):
         self.widget = self.ui.Application(self.root)
@@ -101,6 +103,7 @@ def run() -> None:
         pass
 
     root = tk.Tk()
+    # root = ttk.Window()
     root.attributes('-topmost', True)
     TkViewer(root).run()
     root.mainloop()

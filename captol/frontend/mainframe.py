@@ -1,9 +1,8 @@
 from __future__ import annotations
 import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL
-from tkinter import ttk
 
-from ttkbootstrap import Style
+import ttkbootstrap as ttk
 
 from captol.frontend.extracttab import ExtractTab
 from captol.frontend.mergetab import MergeTab
@@ -41,7 +40,8 @@ class Application(ttk.Frame):
         self.root.attributes('-topmost', True)
         self.root.geometry("460x507-0+10")
         self.root.resizable(False, False)
-        self.root = Style(self.env.theme).master
+        self.style = ttk.Style()
+        self.style.theme_use(self.env.theme)
 
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
@@ -52,7 +52,7 @@ class Application(ttk.Frame):
         note.add(MergeTab(
             note, parent=self, env=self.env), text="2. Merge  ")
         ttk.Button(
-            self, text="Settings", style='secondary.Outline.TButton',
+            self, text="Settings", bootstyle='secondary-outline-button',
             command=self._on_settings_clicked).place(x=360, y=0, width=95)
         self.pack(fill=BOTH, expand=True)
 

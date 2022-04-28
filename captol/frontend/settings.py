@@ -2,11 +2,10 @@ from __future__ import annotations
 from dataclasses import asdict
 import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL
-from tkinter import ttk
 from tkinter import messagebox
 from typing import TYPE_CHECKING
 
-from ttkbootstrap import Style
+import ttkbootstrap as ttk
 
 from captol.utils.const import ICON_FILE
 if TYPE_CHECKING:
@@ -17,7 +16,7 @@ if TYPE_CHECKING:
 class SettingsWindow(ttk.Frame):
 
     def __init__(self, parent: Application, env: Environment) -> None:
-        root = self.root = tk.Toplevel(parent)
+        root = self.root = ttk.Toplevel(parent)
         super().__init__(root)
         self.parent = parent
         self.env = env
@@ -52,11 +51,8 @@ class SettingsWindow(ttk.Frame):
     def _create_widgets(self) -> None:
         ttk.Label(self, text="Theme").place(x=20, y=20)
         cbb_theme = ttk.Combobox(
-            self, textvariable=self.var_theme, values=[
-                'cosmo', 'flatly', 'journal', 'lumen', 'minty',
-                'pulse', 'sandstone', 'united', 'yeti', 'cyborg', 'darkly',
-                'solar', 'superhero', 'alt', 'clam', 'classic', 'default',
-                'vista', 'winnative', 'xpnative'])
+            self, textvariable=self.var_theme,
+            values=self.parent.style.theme_names())
         cbb_theme.place(x=320, y=20, width=120)
         ttk.Label(self, text="Area file").place(x=20, y=60)
         ttk.Entry(
@@ -105,10 +101,10 @@ class SettingsWindow(ttk.Frame):
             from_=1, to=3).place(x=320, y=540, width=120)
         ttk.Button(
             self, text="OK", command=self._on_ok,
-            style='primary.TButton').place(x=40, y=590, width=160)
+            bootstyle='primary-button').place(x=40, y=590, width=160)
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
-            style='primary.Outline.TButton').place(x=260, y=590, width=160)
+            bootstyle='primary-outline-button').place(x=260, y=590, width=160)
         self.pack(fill=BOTH, expand=True)
         cbb_theme.bind(
             '<<ComboboxSelected>>',
@@ -157,4 +153,4 @@ class SettingsWindow(ttk.Frame):
         self.root.destroy()
 
     def _change_theme(self, theme: str) -> None:
-        Style().theme_use(theme)
+        self.parent.style.theme_use(theme)

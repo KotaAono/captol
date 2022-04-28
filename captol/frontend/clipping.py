@@ -4,10 +4,11 @@ from threading import Thread
 from time import sleep
 import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL, CENTER
-from tkinter import ttk
 from tkinter import messagebox
 from typing import TYPE_CHECKING
 from win32api import EnumDisplayMonitors
+
+import ttkbootstrap as ttk
 
 from captol.utils.const import ICON_FILE
 from captol.utils.path import unique_str
@@ -83,7 +84,7 @@ class ClipFrame(ttk.Frame):
 
     def _create_widgets(self) -> None:
         ttk.Button(
-            self, text="✂", style='primary.TButton',
+            self, text="✂", bootstyle='success-button',
             command=self._on_camera_clicked).place(x=10, y=2, width=60)
         ttk.Label(
             self, text="[                   ]",
@@ -96,10 +97,10 @@ class ClipFrame(ttk.Frame):
             command=self._on_manual_clicked).place(x=225, y=8)
         ttk.Radiobutton(
             self, text="Auto", value=2, variable=self.var_clipmode,
-            style='danger.TRadiobutton',
+            bootstyle='danger-radiobutton',
             command=self._on_auto_clicked).place(x=320, y=8)
         fold_button = self.fold_button = ttk.Button(
-            self, text="▲", style='secondary.Outline.TButton',
+            self, text="▲", bootstyle='secondary-outline-button',
             command=self._on_fold_clicked)
         fold_button.place(x=400, y=2, width=45)
 
@@ -235,7 +236,7 @@ class EditDialog(ttk.Frame):
         ttk.LabelFrame(self, text="Area").place(
             x=10, y=60, width=440, height=130)
         ttk.Button(
-            self, text="Direct\nDraw", style='warning.TButton',
+            self, text="Direct\nDraw", bootstyle='warning-button',
             command=self._on_direct_draw).place(
                 x=30, y=95, width=90, height=80)
         ttk.Label(self, text="x:").place(x=150, y=95)
@@ -260,10 +261,10 @@ class EditDialog(ttk.Frame):
         spb_h.place(x=350, y=140, width=80)
         ttk.Button(
             self, text="OK", command=self._on_ok,
-            style='primary.TButton').place(x=40, y=200, width=160)
+            bootstyle='primary-button').place(x=40, y=200, width=160)
         ttk.Button(
             self, text="Cancel", command=self._on_cancel,
-            style='primary.Outline.TButton').place(x=260, y=200, width=160)
+            bootstyle='primary-outline-button').place(x=260, y=200, width=160)
         spb_x.bind('<KeyRelease>', self._on_spb_changed)
         spb_w.bind('<KeyRelease>', self._on_spb_changed)
         spb_y.bind('<KeyRelease>', self._on_spb_changed)

@@ -2,9 +2,10 @@ from __future__ import annotations
 from dataclasses import asdict
 import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL, CENTER, VERTICAL
-from tkinter import ttk
 from tkinter import filedialog, messagebox
 from typing import TYPE_CHECKING
+
+import ttkbootstrap as ttk
 
 from captol.frontend.clipping import ClipFrame, EditDialog
 from captol.utils.path import shorten
@@ -92,7 +93,7 @@ class ExtractTab(ttk.Frame):
             frame1,
             text="Save folder info").place(x=10, y=10, width=435, height=170)
         ttk.Button(
-            frame1, text="📁", style='secondary.Outline.TButton',
+            frame1, text="📁", bootstyle='secondary-outline-button',
             command=self._on_folder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             frame1, textvariable=self.var_folder,
@@ -124,7 +125,7 @@ class ExtractTab(ttk.Frame):
             frame1, text="Edit",
             command=self._on_edit_clicked).place(x=275, y=280, width=150)
         ttk.Button(
-            frame1, text="Set", style='warning.TButton',
+            frame1, text="Set", bootstyle='warning-button',
             command=self._on_set_clicked).place(x=275, y=350, width=150)
         lb_areas.bind('<<ListboxSelect>>', self._on_area_selected)
 
