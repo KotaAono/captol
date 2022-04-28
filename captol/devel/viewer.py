@@ -66,7 +66,8 @@ class TkViewer(tk.Frame):
             self.show_ui()
         except Exception as e:
             from traceback import TracebackException
-            self.show_message(''.join(TracebackException.from_exception(e).format()))
+            print(''.join(TracebackException.from_exception(e).format()))
+            self.show_message(e)
 
     def clear(self):
         if self.widget is not None:
