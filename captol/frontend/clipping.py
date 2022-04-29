@@ -185,6 +185,7 @@ class EditDialog(ttk.Frame):
         self, parent: ExtractTab, areadb: AreaDB, name: str = None
     ) -> None:
         root = self.root = tk.Toplevel(parent)
+        root.withdraw()
         super().__init__(root)
         self.parent = parent
         self.areadb = areadb
@@ -227,6 +228,7 @@ class EditDialog(ttk.Frame):
         self.root.attributes('-topmost', True)
         self.root.protocol('WM_DELETE_WINDOW', self._on_cancel)
         self.root.grab_set()
+        self.root.deiconify()
 
     def _create_widgets(self) -> None:
         ttk.Label(self, text="Area name: ").place(x=10, y=20)

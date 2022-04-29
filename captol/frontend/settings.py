@@ -17,6 +17,7 @@ class SettingsWindow(ttk.Frame):
 
     def __init__(self, parent: Application, env: Environment) -> None:
         root = self.root = ttk.Toplevel(parent)
+        root.withdraw()
         super().__init__(root)
         self.parent = parent
         self.env = env
@@ -47,6 +48,7 @@ class SettingsWindow(ttk.Frame):
         self.root.resizable(False, False)
         self.root.attributes('-topmost', True)
         self.root.protocol('WM_DELETE_WINDOW', self._on_cancel)
+        self.root.deiconify()
 
     def _create_widgets(self) -> None:
         ttk.Label(self, text="Theme").place(x=20, y=20)

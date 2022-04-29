@@ -88,6 +88,7 @@ class ProgressWindow(ttk.Frame):
 
     def __init__(self, parent: MergeTab, title: str, text: str) -> None:
         root = self.root = ttk.Toplevel(parent)
+        root.withdraw()
         super().__init__(root)
         self.parent = parent
         self.title = title
@@ -121,6 +122,7 @@ class ProgressWindow(ttk.Frame):
         self.root.geometry("460x85")
         self.root.resizable(False, False)
         self.root.grab_set()
+        self.root.deiconify()
 
     def _create_widget(self) -> None:
         ttk.Label(self, text=self.text).place(x=20, y=20)

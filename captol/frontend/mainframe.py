@@ -14,6 +14,7 @@ from captol.backend.data import Environment
 class Application(ttk.Frame):
 
     def __init__(self, root: tk.Tk) -> None:
+        root.withdraw()
         super().__init__(root)
         self.root = root
         self.settingswindow = None
@@ -42,6 +43,7 @@ class Application(ttk.Frame):
         self.root.resizable(False, False)
         self.style = ttk.Style()
         self.style.theme_use(self.env.theme)
+        self.root.deiconify()
 
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
