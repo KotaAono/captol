@@ -166,16 +166,11 @@ class MergeTab(ttk.Frame):
         pwd1, pwd2 = self.var_pwd1.get(), self.var_pwd2.get()
         if not self._verify(pwd1, pwd2):
             return
-        savepath = filedialog.asksaveasfilename(
-            title="Save as", filetypes=[('pdf', '*.pdf')])
-        if not savepath:
-            return
-        savepath = append_ext(savepath, '.pdf')
 
         self.block_widgets()
         with ProgressWindow(
             self, "Password Protection", "Trying to encrypt...") as pb:
-            pb.during(self.passlock.encrypt, pdfpath, savepath, pwd1)
+            pb.during(self.passlock.encrypt, pdfpath, pdfpath, pwd1)
             pb.after(self._init_vars_protection)
             pb.final(self.release_widgets)
 

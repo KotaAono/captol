@@ -6,6 +6,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from PIL import Image
 
 import img2pdf
+import pikepdf
 
 from captol.backend.data import Environment
 
@@ -97,41 +98,25 @@ class PassLock:
         self.env = env
 
     def encrypt(self, pdfpath: str, savepath: str, pw: str):
-        lv = self._key_length()
-        if pdfpath != savepath:
-            self._run(
-                f'qpdf --encrypt {pw} {pw} {lv} -- "{pdfpath}" "{savepath}"')
+        if self.pdf_restriction:
+            allow = pikepdf.Permissions(
+                accessibility=False, extract=False, modify_annotation=False,
+                modify_assembly=False, modify_form=False, modify_other=False,
+                print_lowres=False, print_highres=False)
         else:
-            self._run(
-                f'qpdf --encrypt {pw} {pw} {lv} -- --replace-input "{pdfpath}"')
+            allow = pikepdf.Permissions()
+        with pikepdf.open(pdfpath, allow_overwriting_input=True) as pdf:
+            pdf.save(savepath, encryption=pikepdf.Encryption(
+                user=pw, owner=pw, allow=allow))
 
     def decrypt(self, pdfpath: str, savepath: str, pw: str):
-        if pdfpath != savepath:
-            self._run(
-                f'qpdf --password={pw} --decrypt "{pdfpath}" "{savepath}"')
-        else:
-            self._run(
-                f'qpdf --password={pw} --decrypt --replace-input "{pdfpath}"')
+        with pikepdf.open(pdfpath, password=pw, allow_overwriting_input=True) as pdf:
+            pdf.save(savepath)
 
     def check_encryption(self, pdfpath: str) -> bool:
         try:
-            self._run(f'qpdf --is-encrypted "{pdfpath}"')
-            return True
-        except Exception:
+            with pikepdf.open(pdfpath) as pdf:
+                pass
             return False
-
-    def _run(self, command: str) -> None:
-        output = subprocess.run(command, capture_output=True)
-        if output.returncode == 2:
-            raise Exception(output.stderr.decode())
-
-    def _key_length(self) -> str:
-        lv = self.env.password_security_level
-        if lv == 1:
-            return '40'
-        elif lv == 2:
-            return '128'
-        elif lv == 3:
-            return '256'
-        else:
-            raise ValueError(f'Security level must be 1, 2 or 3, not {lv}.')
+        except pikepdf.PasswordError:
+            return True

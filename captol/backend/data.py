@@ -2,6 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 import json
 from os import makedirs
+import os
 from os.path import dirname
 from typing import Literal
 
@@ -82,7 +83,7 @@ class Rectangle:
 class Environment:
     theme: str = "darkly"
     area_file: str = AREA_FILE
-    default_save_folder: str = "C:/Users/hnlPublic/Desktop"
+    default_save_folder: str = os.environ['HOMEPATH'].replace('\\', '/')
     pixel_difference_threshold: int = 10000
     image_duplication_check_steps: int = 1
     auto_clip_interval: float = 1.0
@@ -91,7 +92,7 @@ class Environment:
     resize_before_pdf_conversion: bool = False
     resized_height: int = 720
     zip_converted_images: bool = True
-    password_security_level: Literal[1, 2, 3] = 3
+    hold_metadata: bool = True
 
     def __post_init__(self) -> None:
         self.load()

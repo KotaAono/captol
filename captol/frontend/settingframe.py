@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import asdict
+import os
 import tkinter as tk
 from tkinter import BOTH, DISABLED, NORMAL
 from tkinter import messagebox
@@ -32,7 +33,7 @@ class SettingsWindow(ttk.Frame):
         self.var_resize_before_pdf_conversion = tk.BooleanVar()
         self.var_resized_height = tk.IntVar()
         self.var_zip_converted_images = tk.BooleanVar()
-        self.var_password_security_level = tk.IntVar()
+        self.var_pdf_restriction = tk.BooleanVar()
 
         self._setup_root()
         self._init_vars()
@@ -97,10 +98,10 @@ class SettingsWindow(ttk.Frame):
         ttk.Label(self, text="Zip converted images").place(x=20, y=500)
         ttk.Checkbutton(
             self, variable=self.var_zip_converted_images).place(x=375, y=505)
-        ttk.Label(self, text="Password security level").place(x=20, y=540)
-        ttk.Spinbox(
-            self, textvariable=self.var_password_security_level,
-            from_=1, to=3).place(x=320, y=540, width=120)
+        ttk.Label(self,
+            text="Set restrictions to encrypted pdfs").place(x=20, y=540)
+        ttk.Checkbutton(
+            self, variable=self.var_pdf_restriction).place(x=375, y=540)
         ttk.Button(
             self, text="OK", command=self._on_ok,
             bootstyle='primary-button').place(x=40, y=590, width=160)
