@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Callable
 import ttkbootstrap as ttk
 
 if TYPE_CHECKING:
-    from captol.frontend.clipping import ClipFrame, EditDialog
+    from captol.frontend.clipframe import ClipFrame, EditDialog
     from captol.frontend.extracttab import ExtractTab
     from captol.frontend.mergetab import MergeTab
 

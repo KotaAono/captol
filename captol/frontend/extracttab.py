@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import ttkbootstrap as ttk
 
-from captol.frontend.clipping import ClipFrame, EditDialog
+from captol.frontend.clipframe import ClipFrame, EditDialog
 from captol.utils.path import shorten
 from captol.frontend.subframe import TransparentWindow
 from captol.backend.extraction import Clipper, ImageCounter

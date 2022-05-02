@@ -6,7 +6,7 @@ import ttkbootstrap as ttk
 
 from captol.frontend.extracttab import ExtractTab
 from captol.frontend.mergetab import MergeTab
-from captol.frontend.settings import SettingsWindow
+from captol.frontend.settingframe import SettingsWindow
 from captol.utils.const import ICON_FILE
 from captol.backend.data import Environment
 
