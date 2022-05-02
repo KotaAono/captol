@@ -155,7 +155,7 @@ class MergeTab(ttk.Frame):
             self.btn_lock['command'] = self._unlock
         else:
             self.ent_pwd1['show'] = "●"
-            self.ent_pwd2.place(x=145, y=365, width=280)
+            self.ent_pwd2.place(x=145, y=345, width=280)
             self.btn_lock['text'] = "Lock"
             self.btn_lock['command'] = self._lock
 
