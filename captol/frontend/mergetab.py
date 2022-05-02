@@ -150,12 +150,12 @@ class MergeTab(ttk.Frame):
         self.var_pdfpath.set(shorten(pdf_path, maxlen=2))
         if self.passlock.check_encryption(pdf_path):
             self.ent_pwd1['show'] = ""
-            self.ent_pwd2.place_forget()
+            self.ent_pwd2['state'] = 'readonly'
             self.btn_lock['text'] = "Unlock"
             self.btn_lock['command'] = self._unlock
         else:
             self.ent_pwd1['show'] = "●"
-            self.ent_pwd2.place(x=145, y=345, width=280)
+            self.ent_pwd2['state'] = 'normal'
             self.btn_lock['text'] = "Lock"
             self.btn_lock['command'] = self._lock
 
