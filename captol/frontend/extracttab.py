@@ -100,7 +100,7 @@ class ExtractTab(ttk.Frame):
         ttk.Label(
             frame1, textvariable=self.var_nimages_total,
             anchor=CENTER).place(x=200, y=100, width=200)
-        ttk.Label(frame1, text="Today's images:").place(x=30, y=140)
+        ttk.Label(frame1, text="Today images:").place(x=30, y=140)
         ttk.Label(
             frame1, textvariable=self.var_nimages_today,
             anchor=CENTER).place(x=200, y=140, width=200)
@@ -110,7 +110,8 @@ class ExtractTab(ttk.Frame):
         lb_areas = self.lb_areas = tk.Listbox(
             frame1, listvariable=self.var_listitems)
         lb_areas.place(x=30, y=230, height=160, width=205)
-        scrollbar = ttk.Scrollbar(frame1, orient=VERTICAL, command=lb_areas.yview)
+        scrollbar = ttk.Scrollbar(
+            frame1, orient=VERTICAL, command=lb_areas.yview)
         lb_areas['yscrollcommand'] = scrollbar.set
         scrollbar.place(x=235, y=230, height=160)
         ttk.Button(
