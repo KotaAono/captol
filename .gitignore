@@ -2,3 +2,4 @@ captol.egg-info/
 __pycache__/
 *.json
 *.vbs
+test*.py

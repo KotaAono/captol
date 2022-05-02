@@ -111,7 +111,6 @@ class SettingsWindow(ttk.Frame):
         cbb_theme.bind(
             '<<ComboboxSelected>>',
             lambda event: self._change_theme(self.var_theme.get()))
-        self._change_theme(self.var_theme.get())
         self._on_enable_comp()
         self._on_enable_resize()
 
@@ -155,4 +154,7 @@ class SettingsWindow(ttk.Frame):
         self.root.destroy()
 
     def _change_theme(self, theme: str) -> None:
-        self.parent.style.theme_use(theme)
+        try:
+            self.parent.style.theme_use(theme)
+        except tk.TclError:
+            pass
