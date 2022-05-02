@@ -37,6 +37,10 @@ You can create shortcuts by executing the following command. After that you can 
 python -m captol --create-shortcut
 ```
 
-## Environment
-* Python >= 3.6
+## Requirement
 * Windows 10
+* Python 3.6+
+* img2pdf
+* OpenCV-Python 4.0+
+* Pillow 8.3
+* ttkbootstrap 1.7
