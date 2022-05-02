@@ -152,6 +152,7 @@ class ClipFrame(ttk.Frame):
         if messagebox.askyesno(
             "Autoclip", "Do you want to enable Autoclip?"):
             self.parent.block_widgets()
+            self.area_button.state(['disabled'])
             self.root.after(500, _run_thread)  # messageboxをキャプチャしないように
         else:
             self.var_clipmode.set(2)
@@ -165,6 +166,7 @@ class ClipFrame(ttk.Frame):
                 self.thread = None
             messagebox.showinfo("Autoclip", "Autoclip stopped.")
             self.parent.release_widgets()
+            self.area_button.state(['!disabled'])
 
     def _normal_save(self) -> None:
         self._extract()
