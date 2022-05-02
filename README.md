@@ -6,9 +6,9 @@ Captol is a python-based GUI application for reconstructing screen-shared docume
 
 ### Extract (left)
 1. Select a folder to save screenshots.
-2. Select an area to clip. You can edit areas from right buttons. <br>
-"Edit" -> "Direct Draw" allows you to specify an area by dragging.
-3. Set the clip area.
+2. Select a screenshot range. You can edit the ranges from the right buttons. <br>
+"Edit" -> "Direct Draw" allows you to specify the range by dragging on screen.
+3. Set the range.
 4. Screenshot! "Auto" mode detects screen switching and automatically takes screenshots.
 
 ### Merge (right)
