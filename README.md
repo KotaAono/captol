@@ -2,7 +2,7 @@
 Captol is a python-based GUI application for reconstructing screen-shared documents.
 
 ## Demo
-<img src="https://user-images.githubusercontent.com/88641432/165248360-bf9e38e5-f1cb-44e5-a033-441989d16e34.png" height=300><img src="https://user-images.githubusercontent.com/88641432/165248729-9b462d20-0496-46ce-816a-f98e8e9165e8.png" height=300>
+<img src="https://user-images.githubusercontent.com/88641432/166207695-a4747daa-1d89-40de-b8f4-a1f9d723beb4.png" height=300><img src="https://user-images.githubusercontent.com/88641432/166207705-1f693d49-8eab-4989-9cd3-7933b6e1ace6.png" height=300>
 
 ### Extract (left)
 1. Select a folder to save screenshots.
