@@ -114,7 +114,7 @@ class ExtractTab(ttk.Frame):
         lb_areas['yscrollcommand'] = scrollbar.set
         scrollbar.place(x=235, y=230, height=160)
         ttk.Button(
-            frame1, text="+",
+            frame1, text="＋",
             command=self._on_plus_clicked).place(x=275, y=230, width=70)
         ttk.Button(
             frame1, text="−",
