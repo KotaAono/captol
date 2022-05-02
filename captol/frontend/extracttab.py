@@ -89,7 +89,7 @@ class ExtractTab(ttk.Frame):
 
         ttk.LabelFrame(
             frame1,
-            text="Save folder info").place(x=10, y=10, width=435, height=170)
+            text="Screen Capture").place(x=10, y=10, width=435, height=400)
         ttk.Button(
             frame1, text="📁", bootstyle='secondary-outline-button',
             command=self._on_folder_clicked).place(x=30, y=50, width=45)
@@ -100,13 +100,13 @@ class ExtractTab(ttk.Frame):
         ttk.Label(
             frame1, textvariable=self.var_nimages_total,
             anchor=CENTER).place(x=200, y=100, width=200)
-        ttk.Label(frame1, text="Today images:").place(x=30, y=140)
+        ttk.Label(frame1, text="Today's images:").place(x=30, y=140)
         ttk.Label(
             frame1, textvariable=self.var_nimages_today,
             anchor=CENTER).place(x=200, y=140, width=200)
 
         ttk.LabelFrame(
-            frame1, text="Clip area").place(x=10, y=190, width=435, height=220)
+            frame1, text="Range").place(x=20, y=190, width=415, height=210)
         lb_areas = self.lb_areas = tk.Listbox(
             frame1, listvariable=self.var_listitems)
         lb_areas.place(x=30, y=230, height=160, width=205)

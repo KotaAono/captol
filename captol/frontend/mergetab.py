@@ -56,7 +56,7 @@ class MergeTab(ttk.Frame):
     def _create_widgets(self) -> None:
         ttk.LabelFrame(
             self,
-            text="PDF conversion").place(x=10, y=10, width=435, height=130)
+            text="PDF Conversion").place(x=10, y=10, width=435, height=130)
         ttk.Button(
             self, text="📁", bootstyle='secondary-outline-button',
             command=self._on_imagefolder_clicked).place(x=30, y=50, width=45)
@@ -75,7 +75,7 @@ class MergeTab(ttk.Frame):
             self, text="Convert",
             command=self._on_convert_clicked).place(x=150, y=155, width=160)
         ttk.LabelFrame(
-            self, text="Password protection").place(
+            self, text="Password Protection").place(
                 x=10, y=200, width=435, height=200)
         ttk.Button(
             self, text="📁", bootstyle='secondary-outline-button',
@@ -155,7 +155,7 @@ class MergeTab(ttk.Frame):
             self.btn_lock['command'] = self._unlock
         else:
             self.ent_pwd1['show'] = "●"
-            self.ent_pwd2.place(x=145, y=365, width=280)
+            self.ent_pwd2.place(x=145, y=345, width=280)
             self.btn_lock['text'] = "Lock"
             self.btn_lock['command'] = self._lock
 

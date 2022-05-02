@@ -95,7 +95,7 @@ class ClipFrame(ttk.Frame):
         ttk.Radiobutton(
             self, text="Auto", variable=self.var_clipmode,
             bootstyle='danger-roundtoggle',
-            command=self._on_auto_clicked).place(x=300, y=8)
+            command=self._on_auto_clicked).place(x=300, y=10)
         fold_button = self.fold_button = ttk.Button(
             self, text="▲", bootstyle='secondary-outline-button',
             command=self._on_fold_clicked)
