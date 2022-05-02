@@ -51,6 +51,7 @@ class ClipFrame(ttk.Frame):
         self.var_areaname = tk.StringVar()
         self.imbuffer = ImageBuffer(env)
         self.xparentwindow = TransparentWindow(parent=self)
+        self._is_showingprev = False
 
         self._create_widgets()
         self._init_vars()
@@ -86,11 +87,11 @@ class ClipFrame(ttk.Frame):
         ttk.Button(
             self, text="✂", bootstyle='success-button',
             command=self._on_camera_clicked).place(x=10, y=2, width=60)
-        ttk.Label(
-            self, text="["+" "*38+"]").place(x=85, y=5, width=220)
-        ttk.Label(
+        area_button = self.area_button = ttk.Button(
             self, textvariable=self.var_areaname,
-            anchor=CENTER).place(x=100, y=5, width=180)
+            bootstyle='secondary-outline-toolbutton',
+            command=self._switch_preview)
+        area_button.place(x=80, y=2, width=200)
         ttk.Radiobutton(
             self, text="Auto", variable=self.var_clipmode,
             bootstyle='danger-roundtoggle',
@@ -102,7 +103,7 @@ class ClipFrame(ttk.Frame):
 
     def _init_vars(self) -> None:
         self.var_clipmode.set(2)
-        self.var_areaname.set("------")
+        self.var_areaname.set("( Not set )")
 
     def _on_camera_clicked(self) -> None:
         if self.clipper.area is None:
@@ -124,6 +125,18 @@ class ClipFrame(ttk.Frame):
             self._start_autoclip()
         else:
             self._end_autoclip()
+
+    def _switch_preview(self) -> None:
+        self.parent.xparentwindow.hide()
+
+        if self._is_showingprev:
+            self.area_button.state(['!pressed'])
+            self.xparentwindow.hide()
+            self._is_showingprev = False
+        else:
+            self.area_button.state(['pressed'])
+            self.xparentwindow.preview()
+            self._is_showingprev = True
 
     def _start_autoclip(self) -> None:
         def _target():
