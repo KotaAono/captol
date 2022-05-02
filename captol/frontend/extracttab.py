@@ -200,6 +200,8 @@ class ExtractTab(ttk.Frame):
         self.var_listitems.set(keys)
 
     def _switch_preview(self, name: str, rect: Rectangle) -> None:
+        self.clipframe.xparentwindow.hide()
+        self.clipframe.area_button.state(['!pressed'])
         if name != self.prevname:
             self.xparentwindow.hide()
             self.xparentwindow.resize(**asdict(rect))
