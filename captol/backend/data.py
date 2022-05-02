@@ -92,7 +92,7 @@ class Environment:
     resize_before_pdf_conversion: bool = False
     resized_height: int = 720
     zip_converted_images: bool = True
-    hold_metadata: bool = True
+    pdf_restriction: bool = True
 
     def __post_init__(self) -> None:
         self.load()
@@ -111,5 +111,7 @@ class Environment:
             json.dump(asdict(self), f, indent=4)
 
     def _set_data(self, jsondict: dict) -> None:
+        attrs = dir(self)
         for name, var in jsondict.items():
-            self.__setattr__(name, var)
+            if name in attrs:
+                self.__setattr__(name, var)
