@@ -39,7 +39,7 @@ class Application(ttk.Frame):
             pass
         self.root.title("Captol")
         self.root.attributes('-topmost', True)
-        self.root.geometry("460x507-0+10")
+        self.root.geometry("460x510-0+10")
         self.root.resizable(False, False)
         self.style = ttk.Style()
         self.style.theme_use(self.env.theme)
@@ -55,7 +55,7 @@ class Application(ttk.Frame):
             note, parent=self, env=self.env), text="2. Merge  ")
         ttk.Button(
             self, text="Settings", bootstyle='secondary-outline-button',
-            command=self._on_settings_clicked).place(x=360, y=0, width=95)
+            command=self._on_settings_clicked).place(x=360, y=1, width=95)
         self.pack(fill=BOTH, expand=True)
 
     def _on_settings_clicked(self) -> None:

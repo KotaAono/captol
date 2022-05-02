@@ -62,11 +62,11 @@ class MergeTab(ttk.Frame):
             command=self._on_imagefolder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             self, textvariable=self.var_imagename_from,
-            state='readonly').place(x=80, y=50, width=160, height=37)
+            state='readonly').place(x=80, y=50, width=160)
         ttk.Label(self, text="–").place(x=246, y=52)
         ttk.Entry(
             self, textvariable=self.var_imagename_to,
-            state='readonly').place(x=267, y=50, width=160, height=37)
+            state='readonly').place(x=267, y=50, width=160)
         ttk.Label(self, text="Total images:").place(x=30, y=100)
         ttk.Label(
             self, textvariable=self.var_nimages_total,
@@ -82,14 +82,14 @@ class MergeTab(ttk.Frame):
             command=self._on_pdffolder_clicked).place(x=30, y=240, width=45)
         ttk.Entry(
             self, textvariable=self.var_pdfpath,
-            state='readonly').place(x=80, y=240, width=345, height=37)
+            state='readonly').place(x=80, y=240, width=345)
         ttk.Label(self, text="Password:").place(x=30, y=300)
         ent_pwd1 = self.ent_pwd1 = ttk.Entry(self, textvariable=self.var_pwd1)
-        ent_pwd1.place(x=145, y=295, width=280, height=37)
+        ent_pwd1.place(x=145, y=295, width=280)
         ttk.Label(self, text="Again:").place(x=30, y=350)
         ent_pwd2 = self.ent_pwd2 = ttk.Entry(
             self, show="●", textvariable=self.var_pwd2)
-        ent_pwd2.place(x=145, y=345, width=280, height=37)
+        ent_pwd2.place(x=145, y=345, width=280)
         btn_lock = self.btn_lock = ttk.Button(self)
         btn_lock.place(x=150, y=415, width=160)
         self.pack(fill=BOTH, expand=True)
@@ -155,7 +155,7 @@ class MergeTab(ttk.Frame):
             self.btn_lock['command'] = self._unlock
         else:
             self.ent_pwd1['show'] = "●"
-            self.ent_pwd2.place(x=145, y=365, width=280, height=37)
+            self.ent_pwd2.place(x=145, y=365, width=280)
             self.btn_lock['text'] = "Lock"
             self.btn_lock['command'] = self._lock
 

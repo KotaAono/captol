@@ -48,14 +48,14 @@ class ExtractTab(ttk.Frame):
     def shrink(self) -> None:
         self.frame1.pack_forget()
         self.parent.disable_mergetab()
-        self.parent.resize('460x93')
+        self.parent.resize('460x100')
 
     def extend(self) -> None:
         self.frame2.pack_forget()
         self.frame1.pack(fill=BOTH, expand=True)
         self.frame2.pack(fill=BOTH, expand=True, pady=5)
         self.parent.enable_mergetab()
-        self.parent.resize('460x507')
+        self.parent.resize('460x510')
 
     def block_widgets(self) -> None:
         for widget in self.frame1.winfo_children():
@@ -97,7 +97,7 @@ class ExtractTab(ttk.Frame):
             command=self._on_folder_clicked).place(x=30, y=50, width=45)
         ttk.Entry(
             frame1, textvariable=self.var_folder,
-            state='readonly').place(x=80, y=50, width=345, height=37)
+            state='readonly').place(x=80, y=50, width=345)
         ttk.Label(frame1, text="Past images:").place(x=30, y=100)
         ttk.Label(
             frame1, textvariable=self.var_nimages_total,
@@ -111,10 +111,10 @@ class ExtractTab(ttk.Frame):
             frame1, text="Clip area").place(x=10, y=190, width=435, height=220)
         lb_areas = self.lb_areas = tk.Listbox(
             frame1, listvariable=self.var_listitems)
-        lb_areas.place(x=30, y=230, height=158, width=205)
+        lb_areas.place(x=30, y=230, height=160, width=205)
         scrollbar = ttk.Scrollbar(frame1, orient=VERTICAL, command=lb_areas.yview)
         lb_areas['yscrollcommand'] = scrollbar.set
-        scrollbar.place(x=235, y=230, height=158)
+        scrollbar.place(x=235, y=230, height=160)
         ttk.Button(
             frame1, text="+",
             command=self._on_plus_clicked).place(x=275, y=230, width=70)
