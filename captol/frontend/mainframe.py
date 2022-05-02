@@ -11,6 +11,10 @@ from captol.utils.const import ICON_FILE
 from captol.backend.data import Environment
 
 
+SIZE_NORMAL = '460x510'
+SIZE_SHORT = '460x100'
+
+
 class Application(ttk.Frame):
 
     def __init__(self, root: tk.Tk) -> None:
@@ -23,14 +27,15 @@ class Application(ttk.Frame):
         self._setup_root()
         self._create_widgets()
 
-    def resize(self, geometry: str) -> None:
-        self.root.geometry(geometry)
-
-    def enable_mergetab(self) -> None:
-        self.note.tab(1, state=NORMAL)
-
-    def disable_mergetab(self) -> None:
+    def shrink(self) -> None:
         self.note.tab(1, state=DISABLED)
+        self.note.place_configure(height=96)
+        self.root.geometry(SIZE_SHORT)
+
+    def extend(self) -> None:
+        self.note.tab(1, state=NORMAL)
+        self.note.place_configure(height=506)
+        self.root.geometry(SIZE_NORMAL)
 
     def _setup_root(self) -> None:
         try:
@@ -39,7 +44,7 @@ class Application(ttk.Frame):
             pass
         self.root.title("Captol")
         self.root.attributes('-topmost', True)
-        self.root.geometry("460x510-0+10")
+        self.root.geometry(f"{SIZE_NORMAL}-0+10")
         self.root.resizable(False, False)
         self.style = ttk.Style()
         self.style.theme_use(self.env.theme)
@@ -48,7 +53,7 @@ class Application(ttk.Frame):
     def _create_widgets(self) -> None:
         note = self.note = ttk.Notebook(self)
         note.root = self
-        note.place(x=0, y=4, relwidth=1, height=527)
+        note.place(x=0, y=4, relwidth=1, height=506)
         note.add(ExtractTab(
             note, parent=self, env=self.env), text="1. Extract")
         note.add(MergeTab(

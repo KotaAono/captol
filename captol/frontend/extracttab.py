@@ -45,17 +45,15 @@ class ExtractTab(ttk.Frame):
         self._reset_folder_info(env.default_save_folder)
         self._reset_clip_areas(areadb.namelist)
 
-    def shrink(self) -> None:
+    def hide(self) -> None:
         self.frame1.pack_forget()
-        self.parent.disable_mergetab()
-        self.parent.resize('460x100')
+        self.parent.shrink()
 
-    def extend(self) -> None:
+    def show(self) -> None:
         self.frame2.pack_forget()
         self.frame1.pack(fill=BOTH, expand=True)
         self.frame2.pack(fill=BOTH, expand=True, pady=5)
-        self.parent.enable_mergetab()
-        self.parent.resize('460x510')
+        self.parent.extend()
 
     def block_widgets(self) -> None:
         for widget in self.frame1.winfo_children():
@@ -86,7 +84,7 @@ class ExtractTab(ttk.Frame):
             self.clipframe.register_cliparea(newname, newrect)
 
     def _create_widgets(self) -> None:
-        frame1 = self.frame1 = ttk.Frame(self, height=350)
+        frame1 = self.frame1 = ttk.Frame(self, height=370)
         frame1.pack(fill=BOTH, expand=True)
 
         ttk.LabelFrame(

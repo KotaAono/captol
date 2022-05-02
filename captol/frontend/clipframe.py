@@ -110,16 +110,14 @@ class ClipFrame(ttk.Frame):
         self._normal_save()
 
     def _on_fold_clicked(self) -> None:
-        self.parent.shrink()
+        self.parent.hide()
         self.fold_button['text'] = "▼"
         self.fold_button['command'] = self._on_unfold_clicked
-        self.parent.parent.note.place_configure(height=100)
 
     def _on_unfold_clicked(self) -> None:
-        self.parent.extend()
+        self.parent.show()
         self.fold_button['text'] = "▲"
         self.fold_button['command'] = self._on_fold_clicked
-        self.parent.parent.note.place_configure(height=526)
 
     def _on_auto_clicked(self) -> None:
         if not self.thread_alive:
