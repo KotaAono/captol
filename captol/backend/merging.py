@@ -1,7 +1,6 @@
 from __future__ import annotations
 import io
 import os
-import subprocess
 from zipfile import ZipFile, ZIP_DEFLATED
 from PIL import Image
 
@@ -98,7 +97,7 @@ class PassLock:
         self.env = env
 
     def encrypt(self, pdfpath: str, savepath: str, pw: str):
-        if self.pdf_restriction:
+        if self.env.pdf_restriction:
             allow = pikepdf.Permissions(
                 accessibility=False, extract=False, modify_annotation=False,
                 modify_assembly=False, modify_form=False, modify_other=False,
