@@ -48,7 +48,7 @@ class TransparentWindow(tk.Frame):
         self.markframe.pack_forget()
         self.root.lift()
         self.root.deiconify()
-        self.root.after(80, self.root.withdraw)
+        self.root.after(50, self.root.withdraw)
 
     def resize(self, x: int, y: int, w: int, h:int) -> None:
         getmetry = f'{w}x{h}+{x}+{y}'
@@ -153,5 +153,3 @@ class ProgressWindow(ttk.Frame):
     def _wait_finish(self) -> None:
         if self.thread.is_alive():
             return self.root.after(100, self._wait_finish)
-
-
